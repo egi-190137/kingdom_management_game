@@ -164,9 +164,11 @@ else:
     diffmult = 1
 
 kingdom_name = input("Apa nama kerajaan Anda?: ")
-player.kingdom = Kingdom(name=kingdom_name, diffmult=diffmult)
+player.kingdom = Kingdom(name=kingdom_name, diffMult=diffmult)
 
 kingdom = player.kingdom
+session.add(kingdom)
+session.commit()
 
 print()
 print("Selamat datang {}, penguasa {}.\n".format(kingdom.ruler, kingdom.name))
@@ -319,149 +321,15 @@ while not kingdom.endGame:
 
             kingdom.tradeMoney(tradenum)
 
-        # else:
-        #     print("Anda tidak memiliki perjanjian dengan {}!\n\n".format(name))
-        #     points -= level*50
-
     elif dailydecision == "f":
-        # if tradewith==1:
-        #     print("Anda memiliki perjanjian dengan {}, jadi Anda tidak dapat menyerang mereka.".format(name))
-        # else:
-            
-        # relationship -= 2
-        # if relationship < 0:
-        #     relationship = 0
-
         kingdom.war()
 
     elif dailydecision == "g":
-        if exploreprice > money:
-            print("Tidak cukup uang!\n\n")
-            points -= level*50
-        else:
-            landgain = int((0.5*land)+1)
-            money -= exploreprice
-            land +=landgain
-            exploreprice = int(1.8*exploreprice)
-            exploregainNum = random.randint(1,9)
-            if exploregainNum == 1:
-                spells.append("Sihir Kemakmuran")
-                print("Anda pergi menjelajah dan menemukan {:,} lahan. Anda juga menemukan buku Sihir yang mengajarkan Anda Sihir Kemakmuran!\n\n".format(landgain))
-            elif exploregainNum == 2:
-                spells.append("Sihir Kesuburan")
-                print("Anda pergi menjelajah dan menemukan {:,} lahan. Anda juga menemukan buku Sihir yang mengajarkan Anda Sihir Kesuburan!\n\n".format(landgain))
-            elif exploregainNum == 3:
-                spells.append("Sihir Kekayaan")
-                print("Anda pergi menjelajah dan menemukan {:,} lahan. Anda juga menemukan buku Sihir yang mengajarkan Anda Sihir Kekayaan!\n\n".format(landgain))
-            elif exploregainNum == 4:
-                spells.append("Sihir Kerja")
-                print("Anda pergi menjelajah dan menemukan {:,} lahan. Anda juga menemukan buku Sihir yang mengajarkan Anda Sihir Kerja!\n\n".format(landgain))
-            elif exploregainNum == 5:
-                if level < 5:
-                    spells.append("Sihir Pedang")
-                    print("Anda pergi menjelajah dan menemukan "+str("{:,}".format(landgain))+" lahan. Anda juga menemukan buku Sihir yang mengajarkan Anda Sihir Pedang!\n\n")
-                elif level < 10:
-                    spells.append("Sihir Perang")
-                    print("Anda pergi menjelajah dan menemukan "+str("{:,}".format(landgain))+" lahan. Anda juga menemukan buku Sihir yang mengajarkan Anda Sihir Perang!\n\n")
-                elif level < 15:
-                    spells.append("Sihir Serangan")
-                    print("Anda pergi menjelajah dan menemukan "+str("{:,}".format(landgain))+" lahan. Anda juga menemukan buku Sihir yang mengajarkan Anda Sihir Serangan!\n\n")
-                elif level < 20:
-                    spells.append("Sihir Pertahanan")
-                    print("Anda pergi menjelajah dan menemukan "+str("{:,}".format(landgain))+" lahan. Anda juga menemukan buku Sihir yang mengajarkan Anda Sihir Pertahanan!\n\n")
-                elif level < 25:
-                    spells.append("Sihir Kehancuran")
-                    print("Anda pergi menjelajah dan menemukan "+str("{:,}".format(landgain))+" lahan. Anda juga menemukan buku Sihir yang mengajarkan Anda Sihir Kehancuran!\n\n")
-                elif level<30:
-                    spells.append("Sihir Kebusukan")
-                    print("Anda pergi menjelajah dan menemukan "+str("{:,}".format(landgain))+" lahan. Anda juga menemukan buku Sihir yang mengajarkan Anda Sihir Kebusukan!\n\n")
-                else:
-                    spells.append("Sihir Kematian")
-                    print("Anda pergi menjelajah dan menemukan "+str("{:,}".format(landgain))+" lahan. Anda juga menemukan buku Sihir yang mengajarkan Anda Sihir Kematian!\n\n")
-            else:
-                print("Anda pergi menjelajah dan menemukan "+str("{:,}".format(landgain))+" lahan.")
-            points += level*50
+        kingdom.exploreLand()
 
     elif dailydecision == "i":
-        wildcard = random.randint(1,10)
-        
-        if wildcard == 1:
-            moneygain = int(0.7*money)+1
-            print("Beberapa petani menemukan peti harta karun tersembunyi yang berisi {:,} di dalam lahan ketika sedang membajak ladang mereka.\n\n".format(moneygain))
-            money += moneygain
-        elif wildcard == 2:
-            buildloss = int(0.3*buildmaterials)
-            print("Seorang pekerja yang kikuk menjatuhkan {:,} bahan bangunan ke dalam lubang tak berujung yang tak berujung, di mana bahan bangunan itu tidak pernah terlihat lagi.\n\n".format(buildloss))
-            buildmaterials -= buildloss
-        elif wildcard == 3:
-            foodgain = int(0.3*food)+2
-            print("Beberapa pelancong menemukan gudang yang ditinggalkan dengan {:,} makanan di dalamnya.\n\n".format(foodgain))
-            food += foodgain
-        elif wildcard == 4:
-            popgrowth = 0
-            pop -= 50
-            birth = False
-            birthres = 10
-            print("Sebuah meteor menghantam daratan, menyebabkan kematian 50 orang. Radiasi juga menyebabkan tingkat kelahiran menjadi 0 selama 10 hari.\n\n")
-        elif wildcard == 5:
-            pointsneeded = levelup - points
-            points += pointsneeded
-            print("Anda menemukan gubuk penyihir dan dia dengan murah hati memberi Anda poin yang cukup untuk naik level!\n\n")
-        elif wildcard == 6:
-            tradewith = 0
-            print("Penasihat kerajaan Anda yang tidak kompeten secara tidak sengaja mengirimkan catatan yang kejam kepada {}. Hal ini membuat mereka marah, sehingga mereka menghentikan perjanjian Anda.\n\n".format(name))
-        elif wildcard == 7:
-            buildgain = int(0.4*buildmaterials)+1
-            buildmaterials = buildmaterials+buildgain
-            print("Anda menemukan sebuah bangunan dalam kondisi yang cukup baik, dan merobohkannya untuk menggunakan kembali {:,} bahan bangunan.\n\n".format(buildgain))
-        elif wildcard == 8:
-            foodloss = int((0.3*food)-1)
-            food -= foodloss
-            foodpro = int(0.5*foodpro)
-            foodres = 3
-            fooddaysuntil = 0
-            foodprocan = False
-            print("Karena serangan angin, Anda kehilangan {:,} makanan dan produksi makanan Anda berkurang setengahnya selama 3 hari.\n\n".format(foodloss))
-        elif wildcard == 9:
-            sp = random.randint(1,5)
-            if sp == 1:
-                spells.append("Sihir Kemakmuran")
-                print("Anda mendapatkan Sihir Kemakmuran! Sihir ini akan menaikkan level Anda 1 level dalam produksi makanan.\n\n")
-            elif sp == 2:
-                spells.append("Sihir Kesuburan")
-                print("Anda mendapatkan Sihir Kesuburan! Sihir ini akan memberikan Anda 100 populasi.\n\n")
-            elif sp == 3:
-                spells.append("Sihir Kekayaan")
-                print("Anda mendapatkan Sihir Kekayaan! Sihir ini akan menaikkan level Anda 1 level dalam produksi uang.\n\n")
-            elif sp == 4:
-                spells.append("Sihir Kerja")
-                print("Anda mendapatkan Sihir Kerja! Sihir ini akan menaikkan level Anda 1 level dalam produksi bahan bangunan.\n\n")
-            elif sp == 5:
-                if level < 5:
-                    spells.append("Sihir Pedang")
-                    print("Anda mendapatkan Sihir Pedang! Sihir ini akan memberikan anda 1.1 kali poin perang anda dalam pertempuran.\n\n")            
-                elif level<10:
-                    spells.append("Sihir Perang")
-                    print("Anda mendapatkan Sihir Perang! Sihir ini akan memberikan Anda 1.5 kali poin perang Anda dalam pertempuran.\n\n")
-                elif level<15:
-                    spells.append("Sihir Serangan")
-                    print("Anda mendapatkan Sihir Serangan! Sihir ini akan memberikan Anda 1.7 kali poin perang Anda dalam pertempuran.\n\n")
-                elif level<20:
-                    spells.append("Sihir Pertahanan")
-                    print("Kamu mendapatkan Sihir Pertahanan! Sihir ini akan memberikan Anda 2 kali poin perang Anda dalam pertempuran.\n\n")
-                elif level<25:
-                    spells.append("Sihir Kehancuran")
-                    print("Anda mendapatkan Sihir Kehancuran! Sihir ini akan memberikan Anda 2.5 kali poin perang Anda dalam pertempuran.\n\n")
-                elif level<30:
-                    spells.append("Sihir Kebusukan")
-                    print("Anda mendapatkan Sihir Kebusukan! Sihir ini akan memberikan Anda 2.7 kali poin perang Anda dalam pertempuran.\n\n")
-                else:
-                    spells.append("Sihir Kematian")
-                    print("Kamu mendapatkan Sihir Kematian! Sihir ini akan memberikan Anda 3 kali poin perang Anda dalam pertempuran.\n\n")
-        else:
-            points -= points+1
-            print("Seorang penyihir jahat menyebabkan poin Anda turun di bawah 0 jadi sekarang Anda turun level.")
-
+        kingdom.randomEvent()
+         
     elif dailydecision == "j":
         print("Berikut adalah Sihir yang Anda miliki:")
         
