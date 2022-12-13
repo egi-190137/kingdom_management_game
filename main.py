@@ -4,8 +4,6 @@ import random
 
 from pygame import mixer 
 from playsound import playsound
-# from django.core.exceptions import ObjectDoesNotExist
-# from django.db import models
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -20,29 +18,28 @@ mixer.music.play()
 
 
 # engine = create_engine("sqlite:///game.db", echo=True, future=True)
+engine = create_engine("mysql+pymysql://root:@localhost/clash_of_clans", echo=True)
 
 session = Session(engine)
 
 # age="Zaman Batu"
 relationship=5
-endgame=False
+# endgame=False
 # soldiers=0
 # soldierprice=100
 # points=0
 # level=166
 # levelup=200
-endgame=0
 popgrowth=5
 enemypopgrowth=5
 # popdeath=1
 enemypopdeath=2
-deathcan=True
-war=0
+# deathcan=True
 # land=1
 # buildmaterials=5000000
 # buildmaterialspro=1
 # money=500000000
-day=1
+# day=1
 # pop=300
 # buildproupgradeprice=10
 # buildprolevel=1
@@ -54,7 +51,7 @@ day=1
 # defenseupgradebuildcost=10
 enemypop=300
 enemydefenselevel=1
-exploreprice=10
+# exploreprice=10
 defenseupgradelandcost=1
 enemysoldiers=0
 # mortars=0
@@ -83,19 +80,19 @@ enemybhbombs=0
 # foodprocan=True
 spells=[]
 sword=1
-war2=1
+# war2=1 => warMult
 attack=1
 defense=1
 destruction=1
 waste=1
 death=1
-consumpmult=1
-prodmult=1
-birthmult=1
+# consumpmult=1
+# prodmult=1
+# birthmult=1
 # diffmult=1
 buildingsL=[]
 popadd=0
-deathadd=0
+# deathadd=0
 
 builts = [ "Belum dibangun" for _ in range(11) ]
 
@@ -135,7 +132,7 @@ elif pilih == 2:
     )
 
     session.add(player)
-    # session.commit()
+    session.commit()
 
 else:
     sys.exit()
@@ -169,33 +166,15 @@ else:
 kingdom_name = input("Apa nama kerajaan Anda?: ")
 player.kingdom = Kingdom(name=kingdom_name, diffmult=diffmult)
 
-kingdom= player.kingdom
+kingdom = player.kingdom
 
 print()
 print("Selamat datang {}, penguasa {}.\n".format(kingdom.ruler, kingdom.name))
 print(f"Anda mulai dengan {kingdom.population} orang di kerajaan Anda. Anda mulai dengan {kingdom.buildMaterials} bahan bangunan, {kingdom.money}$, {kingdom.food} makanan, dan memiliki {kingdom.land} lahan. Rakyat Anda menghasilkan {kingdom.foodPro} makanan/hari, {kingdom.buildMaterialsPro} bahan bangunan per hari, dan {kingdom.moneyPro}$ per hari.\n\n")
 
-# print("Mereka kerajaan tetangga dari {} mengusulkan sebuah perjanjian! Apa yang harus Anda lakukan? Jika Anda menerimanya, Anda tidak akan dapat menyerang mereka, tetapi Anda akan dapat berdagang dengan mereka.".format(name))
-# print("A: Terima perjanjian")
-# print("B: Jangan terima")
-
-# treaty1 = str(input())
-# if treaty1.lower() == "a":
-#     tradewith = 1
-#     relationship = 5
-#     print("Anda telah berhasil membuat perjanjian dengan {}. Anda berteman sekarang :)\n".format(name))
-# elif treaty1.lower() == "b":
-#     relationship = 3
-#     tradewith = 0
-#     print("{} tidak menyukai ini, tetapi Anda baik-baik saja untuk saat ini.\n".format(name))
-# else:
-#     tradewith = 1
-#     relationship = 5
-#     print("Anda telah berhasil membuat perjanjian dengan {}. Anda berteman sekarang :)\n".format(name))
-
 time.sleep(1)
 
-while not endgame:
+while not kingdom.endGame:
     if kingdom.points >= kingdom.levelUp:
         kingdom.level += 1
         kingdom.points = 0
@@ -264,57 +243,19 @@ while not endgame:
         
         time.sleep(2)
     
-    print("\nHari {:,} : ".format(day))
-    print(age)
-    print("Level\t: {:,}".format(level))
-    print("Poin\t: {:,}".format(points))
-    print("Poin yang dibutuhkan untuk level berikutnya: {:,}".format(levelup))
+    # enemypopgrowth  = int(enemypop/90)
+    # enemypopdeath   = int(enemypop/150)
+    kingdom.prodMaterials()
+    kingdom.makeMoney()
+    kingdom.birthPopulation()
+    kingdom.deathPopulation()
+    kingdom.prodFood()
+    kingdom.consumeFood()    
+    # enemypop += enemypopgrowth
+    # enemypop -= enemypopdeath
     
-    buildmaterials  = int(buildmaterials+(prodmult*buildmaterialspro))
-    enemypopgrowth  = int(enemypop/90)
-    enemypopdeath   = int(enemypop/150)
-    money           = int(money+(prodmult*moneypro))
-    
-    if birth:
-        popgrowth   = int(pop/95) + popadd
-        pop         = int(pop+(birthmult*popgrowth) + popadd)
-    else:
-        if daysuntil>=birthres:
-            birth       = True
-            daysuntil   = 0
-            birthres    = 0
-        else:
-            daysuntil   = daysuntil+1
-    
-    if deathcan:
-        popdeath = int(pop/200) + deathadd
-        pop -=popdeath
-    else:
-        pop -=deathadd
-    
-    if foodprocan:
-        food += foodpro
-    else:
-        if fooddaysuntil >= foodres:
-            foodprocan = True
-            foodpro *= 2
-            food    += foodpro
-        else:
-            fooddaysuntil=fooddaysuntil+1
-    
-    consumption = int(consumpmult*pop)
-    if food < consumption:
-        starved = pop-food
-        pop     = pop-starved
-        food    = food-pop
-        print("Anda tidak memiliki cukup makanan, jadi {} orang-orang meninggal karena kelaparan.".format(starved))
-        time.sleep(1)
-    else:
-        food = int(food-consumption)
-    
-    enemypop += enemypopgrowth
-    enemypop -= enemypopdeath
-    
+    # <!------Masih perlu diganti-----!>
+    # <!------AWAL-----!>
     r = [ int(x*diffmult) for x in (40, 40, 50, 70, 100, 150, 200) ]
 
     ranint = [ random.randint(1, x) for x in r ]
@@ -322,260 +263,76 @@ while not endgame:
     if ranint[0] == 1:
         enemydefenselevel = enemydefenselevel+1
     
-    if level>=5:
+    if kingdom.level>=5:
         if ranint[1] == 1:
             enemysoldiers += 1
-    if level>=10:
+    if kingdom.level>=10:
         if ranint[2] == 1:
             enemymortars += 1
-    if level>=15:
+    if kingdom.level>=15:
         if ranint[3] == 1:
             enemymissiles += 1
-    if level>=20:
+    if kingdom.level>=20:
         if ranint[4] == 1:
             enemynukes += 1
-    if level>=25:
+    if kingdom.level>=25:
         if ranint[5] == 1:
             enemyhbombs += 1
-    if level>=30:
+    if kingdom.level>=30:
         if ranint[6] == 1:
             enemybhbombs += 1
+    # <!------AKHIR------!>
 
-    buildingsLS = ", ".join(buildingsL)
-    spellsS     = ", ".join(spells)
-
-    print("Bahan bangunan: {:,}".format(buildmaterials))
-    print("Produksi bahan bangunan: {:,}/hari.".format(int(prodmult*buildmaterialspro)))
-    print("Uang: ${:,}".format(money))
-    print("Produksi uang: ${:,}/hari.".format(int(prodmult*moneypro)))
-    print("Makanan: {:,}".format(food))
-    print("Produksi makanan: {:,}/hari".format(foodpro))
-    print("Angka kelahiran: {:,}/hari".format(int(birthmult*popgrowth)))
-    print("Angka kematian: {:,} (pertumbuhan populasi secara keseluruhan saat ini: {:,})".format( popdeath, (birthmult*popgrowth)-popdeath ))
-    print("Lahan: {:,}".format(land))
-    print("Populasi: {:,}".format(pop))
-    print("Hubungan dengan {}: {}/5".format(name, relationship))
-    print("Sihir: {}".format(spellsS))
-    print("Bangunan: {}".format(buildingsLS))
+    print(kingdom)
     print()
-    print("Apa yang ingin Anda lakukan, {}?".format(rulername))
-    print("A: Tingkatkan produksi bahan bangunan seharga ${:,} (level saat ini: {:,})".format(buildproupgradeprice,buildprolevel))
-    print("B: Tingkatkan produksi uang seharga {:,} bahan bangunan (level saat ini: {:,})".format(moneyproupgradeprice, moneyprolevel))
-    print("C: Tingkatkan pertahanan seharga ${:,} dan {:,} bahan bangunan dan {:,} lahan (level saat ini: {:,})".format(defenseupgradeprice, defenseupgradebuildcost, defenseupgradelandcost, defenselevel))
-    print("D: Tingkatkan produksi makanan seharga $"+str("{:,}".format(foodproupgradeprice))+" (level saat ini: "+str("{:,}".format(foodprolevel))+")")
-    print("E: Coba berdagang dengan {}".format(name))
-    print("F: Nyatakan perang terhadap {}".format(name))
-    print("G: Jelajahi lahan baru seharga ${:,}".format(exploreprice))
-    print("H/kunci lainnya: Hari berikutnya")
-    print("I: Kejadian Random")
-    print("J: Mengeluarkan Sihir")
-    print("K: Mengatur hukum lahan")
-    print("L: Kelola hubungan perjanjian Anda dengan {}".format(name))
-    print("M: Membangun sesuatu")
     
-    if level>=5:
-        print("N: Latih Prajurit seharga ${:,} (saat ini Anda memiliki {:,})".format(soldierprice, soldiers))
-    if level>=10:
-        print("O: Buat Mortir seharga ${:,} (saat ini Anda memiliki {:,})".format(mortarprice, mortars))
-    if level>=15:
-        print("P: Buat Rudal seharga ${:,} (saat ini Anda memiliki {:,})".format(missileprice, missiles))
-    if level>=20:
-        print("Q: Buat Nuklir seharga ${:,} (saat ini Anda memiliki {:,})".format(nukeprice, nukes))
-    if level>=25:
-        print("R: Buat Bom H seharga ${:,} (saat ini Anda memiliki {:,})".format(hbombprice, hbombs))
-    if level>=30:
-        print("S: Buat Bom Lubang Hitam seharga ${:,} (saat ini Anda memiliki {:,})".format(bhbombprice, bhbombs))
-    
-    print("\nX: Exit")
+    kingdom.showDecision()
+
     dailydecision = str(input())
     dailydecision = dailydecision.lower()
     
     if dailydecision == "a":
-        if buildproupgradeprice>money:
-            print("Tidak cukup uang!\n\n")
-            points -= level*50
-        else:
-            playsound('sounds/palu.wav')
-            money -= buildproupgradeprice
-            buildprolevel += 1
-            buildmaterialspro += int((1.5*buildprolevel))
-            buildproupgradeprice += (25*buildprolevel)
-            print("Berhasil ditingkatkan!\n\n")
-            points += level*100
+        kingdom.upgradeBuild()
 
     elif dailydecision == "b":
-        if moneyproupgradeprice>buildmaterials:
-            print("Bahan bangunan tidak cukup!\n\n")
-            points -= level*50
-        else:
-            playsound('sounds/palu.wav')
-            buildmaterials          -= moneyproupgradeprice
-            moneyprolevel           += 1
-            moneypro                += int((1.5*moneyprolevel))
-            moneyproupgradeprice    += (25*moneyprolevel)
-            
-            print("Berhasil ditingkatkan!\n\n")
-            
-            points += level*100
-
+        kingdom.upgradeMoneyProd()
+        
     elif dailydecision == "c":
-        if defenseupgradeprice>money:
-            print("Tidak cukup uang!\n\n")
-            points -= level*50
-        elif defenseupgradebuildcost>buildmaterials:
-            print("Bahan bangunan tidak cukup!\n\n")
-            points -= level*50
-        elif defenseupgradelandcost>land:
-            print("Tidak cukup lahan!\n\n")
-            points -= level*50
-        else:
-            playsound('sounds/palu.wav')
-            buildmaterials -= defenseupgradebuildcost
-            money -= defenseupgradeprice
-            land -= defenseupgradelandcost
-            defenselevel += 1
-            defenseupgradeprice += (25*defenselevel)
-            defenseupgradebuildcost += (25*defenselevel)
-            print("Berhasil ditingkatkan!\n\n")
-            points=points+level*100
-    
+        kingdom.upgradeDefense()
+
     elif dailydecision == "d":
-        if foodproupgradeprice>money:
-            print("Tidak cukup uang!\n\n")
-            points -= level*50
-        else:
-            playsound('sounds/palu.wav')
-            money += foodproupgradeprice
-            foodprolevel += 1
-            foodpro += (100*foodprolevel)
-            foodproupgradeprice +=(15*foodprolevel)
-            print("Berhasil ditingkatkan!\n\n")
-            points += level*100
+        kingdom.upgradeFoodProd()
 
     elif dailydecision == "e":
-        if tradewith == 1:
-            trade = str(input("Apa yang ingin Anda tukar ('b' untuk bahan bangunan, dan 'u' untuk uang): "))
-            trade = trade.lower()
-            if trade =="b" or trade=="B":
-                print("{} akan menukarkan bahan bangunan dengan harga masing-masing $1.".format(name))
-                tradenum = int(input("Berapa banyak yang ingin Anda perdagangkan?: "))
-                if tradenum > money:
-                    print("Tidak cukup uang!\n\n")
-                    points -= level*50
-                elif tradenum==0:
-                    print("Anda tidak dapat melakukan perdagangan untuk 0 uang/bahan bangunan!\n\n")
-                else:
-                    playsound('sounds/cha-ching-7053_1.wav')
-                    money -= tradenum
-                    buildmaterials += tradenum
-                    print("Anda berhasil memperdagangkan "+str("{:,}".format(tradenum))+" bahan bangunan!\n\n")
-                    points += level*100
+        # if tradewith == 1:
+        trade = str(input("Apa yang ingin Anda tukar ('b' untuk bahan bangunan, dan 'u' untuk uang): "))
+        trade = trade.lower()
+        if trade == "b":
+            print("Pedagang akan menukarkan bahan bangunan dengan harga masing-masing $1.")
+            tradenum = int(input("Berapa banyak yang ingin Anda perdagangkan?: "))
 
-            elif trade=="u" or trade=="U":
-                print("{} akan menukar masing-masing $1 untuk bahan bangunan.".format(name))
-                tradenum=int(input("Berapa banyak yang ingin Anda perdagangkan?: "))
-                if tradenum > buildmaterials:
-                    print("Bahan bangunan tidak cukup!\n\n")
-                    points -= level*50
-                elif tradenum==0:
-                    print("Anda tidak dapat melakukan perdagangan untuk 0 uang/bahan bangunan!\n\n")
-                else:
-                    playsound('sounds/cha-ching-7053_1.wav')
-                    money += tradenum
-                    buildmaterials -= tradenum
-                    print("Anda berhasil melakukan perdagangan seharga $"+str("{:,}".format(tradenum))+"!\n\n")
-                    points += level*100
+            kingdom.tradeBuilding(tradenum)
 
-        else:
-            print("Anda tidak memiliki perjanjian dengan {}!\n\n".format(name))
-            points -=level*50
+        elif trade == "u":
+            print("Pedagang akan menukar masing-masing $1 untuk bahan bangunan.")
+            tradenum=int(input("Berapa banyak yang ingin Anda perdagangkan?: "))
+
+            kingdom.tradeMoney(tradenum)
+
+        # else:
+        #     print("Anda tidak memiliki perjanjian dengan {}!\n\n".format(name))
+        #     points -= level*50
 
     elif dailydecision == "f":
-        if tradewith==1:
-            print("Anda memiliki perjanjian dengan {}, jadi Anda tidak dapat menyerang mereka.".format(name))
-        else:
+        # if tradewith==1:
+        #     print("Anda memiliki perjanjian dengan {}, jadi Anda tidak dapat menyerang mereka.".format(name))
+        # else:
             
-            relationship -= 2
-            if relationship<0:
-                relationship = 0
+        # relationship -= 2
+        # if relationship < 0:
+        #     relationship = 0
 
-            enemywarpoints = int((7*enemydefenselevel) 
-                + (0.25*enemypop) 
-                + (7*enemysoldiers) 
-                + (15*enemymortars) 
-                + (30*enemymissiles)
-                + (50*enemynukes)
-                + (100*enemyhbombs)
-                + (200*enemybhbombs))
-
-            warpoints = int(sword*war2*attack*defense*destruction*waste*death*(
-                (7*defenselevel)
-                + (0.25*pop)
-                + (7*soldiers)
-                + (15*mortars)
-                + (30*missiles)
-                + (50*nukes)
-                + (100*hbombs)
-                + (200*bhbombs)))
-            
-            if warpoints > enemywarpoints:
-                playsound('sounds/success-fanfare-trumpets-6185.wav')
-                winby -=enemywarpoints
-                print("\n\nKamu menang! Kamu menjarah kota mereka dan mendapatkan banyak item:")
-                
-                moneyadd    = int(0.5*winby)
-                buildadd    = int(0.5*winby)+11
-                landadd     = int((0.5*winby))
-                foodadd     = int((0.5*winby))+50
-                
-                enemypop        -= (0.5*enemypop)
-                money           += moneyadd
-                buildmaterials  += buildadd
-                land            += landadd
-                food            += foodadd
-                points          += level*100
-                pop             -= (0.1*pop)
-                
-                print("- ${:,}".format(moneyadd))
-                print("- {:,} bahan bangunan".format(buildadd))
-                print("- {:,} lahan baru".format(landadd))
-                print("- {:,} lebih banyak makanan\n".format(foodadd))
-                print("Namun, Anda telah kehilangan {:,} orang-orang dalam perang.\n\n".format(int(0.1*pop)))
-                time.sleep(2)
-            elif warpoints < enemywarpoints:
-                playsound('sounds/piano-crash-sound-37898.wav')
-                loseby=enemywarpoints-warpoints
-                print("\n\nKamu kalah. Mereka menjarah kotamu dan mendapatkan banyak item:")
-                moneysubtract=int(0.5*loseby)
-                buildsubtract=int(0.5*loseby)
-                landsubtract=int(0.5*land)
-                foodsubtract=int(0.5*loseby)
-                food=food-foodsubtract
-                if food<0:
-                    foodsubtract=foodsubtract+food
-                    food=0
-                land=land-landsubtract
-                enemypop=enemypop-(0.1*enemypop)
-                pop=int(0.5*pop)
-                money=money-moneysubtract
-                if money<0:
-                    moneysubtract=moneysubtract+money
-                    money=0
-                buildmaterials=buildmaterials-buildsubtract
-                if buildmaterials<0:
-                    buildsubtract=buildsubtract+buildmaterials
-                    buildmaterials=0
-                points=points-level*100
-
-                print("- ${:,}".format(moneysubtract))
-                print("- {:,} bahan bangunan".format(buildsubtract))
-                print("- {:,} lahan".format(landsubtract))
-                print("- {:,} makanan\n".format(foodsubtract))
-                print("Anda juga telah kehilangan {:,} orang dalam perang.".format(int(0.5*pop)))
-                time.sleep(2)
-            elif warpoints == enemywarpoints:
-                print("Kalian seri. Tidak ada di antara kalian yang kehilangan apapun.")
-                time.sleep(1)
+        kingdom.war()
 
     elif dailydecision == "g":
         if exploreprice > money:
@@ -1038,7 +795,7 @@ while not endgame:
                         pop -= 20
                         foodpro += 1000
                         deathadd += 2
-                        builts[3] = "Dibangun"
+                        builts[4] = "Dibangun"
                         print("Berhasil membangun Altar Pengorbanan, mengorbankan 20 orang tak berdosa dalam prosesnya!\n\n")
                         buildingsL.append("Altar Pengorbanan")
                         points += level*160
@@ -1281,13 +1038,13 @@ while not endgame:
             print()
     
     elif dailydecision == "x":
-        endgame = True
+        kingdom.endGame = True
     else:
         print()
         print()
     
     time.sleep(1)
-    day += 1
+    kingdom.day += 1
 
     if pop<=0:
         print("Populasi Anda menjadi nol. Kerajaan Anda...")
@@ -1296,4 +1053,4 @@ while not endgame:
         time.sleep(0.5)
         print("Anda kalah.")
         time.sleep(2)
-        endgame = True
+        kingdom.endGame = True
