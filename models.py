@@ -36,9 +36,9 @@ class KingdomSpellRelation(Base):
     kingdom_id = Column(ForeignKey("kingdom.id"), primary_key=True)
     spell_id = Column(ForeignKey("spell.id"), primary_key=True)
 
-    kingdom = relationship("Kingdom", back_populates="spells")
+    kingdom = relationship("Kingdom", back_populates="spell_rellations")
 
-    spell = relationship("Spell", back_populates="kingdoms")
+    spell = relationship("Spell", back_populates="kingdoms_relation")
 
 
 class Spell(Base):
@@ -46,7 +46,7 @@ class Spell(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String(50))
-    kingdom = relationship("KingdomSpellRelation", back_populates="spell")
+    kingdoms_relation = relationship("KingdomSpellRelation", back_populates="spell")
 
     def __str__(self):
         return self.name
@@ -58,8 +58,8 @@ class KingdomBuildingRelation(Base):
     kingdom_id = Column(ForeignKey("kingdom.id"), primary_key=True)
     building_id = Column(ForeignKey("building.id"), primary_key=True)
 
-    kingdom = relationship("Kingdom", back_populates="buildings")
-    building = relationship("Building", back_populates="kingdoms")
+    kingdom = relationship("Kingdom", back_populates="building_relations")
+    building = relationship("Building", back_populates="kingdoms_relation")
 
 
 class Building(Base):
@@ -68,7 +68,7 @@ class Building(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(50))
 
-    kingdoms = relationship("KingdomBuildingRelation", back_populates="building")
+    kingdoms_relation = relationship("KingdomBuildingRelation", back_populates="building")
 
     def __str__(self):
         return self.name
@@ -163,14 +163,22 @@ class Kingdom(Base):
     foodProUpgradePrice = Column(Integer, default=50)
     foodProLevel = Column(Integer, default=1)
 
-    spells = relationship("KingdomSpellRelation", back_populates="kingdom")
+    spell_rellations = relationship("KingdomSpellRelation", back_populates="kingdom")
 
-    buildings = relationship("KingdomBuildingRelation", back_populates="kingdom")
+    building_relations = relationship("KingdomBuildingRelation", back_populates="kingdom")
+
+
+    def getAllSpells(self):
+        return [ spell_relation.spell for spell_relation in self.spell_rellations ]
+
+
+    def getAllBuildings(self):
+        return [ building_relation.building for building_relation in self.building_relations ]
 
 
     def __str__(self):
-        spellsS     = "\n".join([f"- {spell}" for spell in self.spells])
-        buildingsLS = "\n".join([f"- {building}" for building in self.buildings])
+        spellsS     = "\n".join([f"- {spell.name}" for spell in self.getAllSpells()])
+        buildingsLS = "\n".join([f"- {building.name}" for building in self.getAllBuildings()])
         
         return f"""\nHari {self.day:,} : 
 {self.age}
@@ -199,14 +207,25 @@ Bangunan:
     def addSpell(self, spellName):
         spell = session.execute(
             select(Spell).where(Spell.name == spellName)
-            ).fetchone()
+            ).fetchone()[0]
         
         relation = KingdomSpellRelation(spell=spell)
 
-        self.spells_relation.append(relation) 
+        self.spell_rellations.append(relation) 
 
         session.commit()
 
+
+    def addBuilding(self, buildingName):
+        building = session.execute(
+            select(Building).where(Building.name == buildingName)
+            ).fetchone()[0]
+        
+        relation = KingdomBuildingRelation(building=building)
+
+        self.building_relations.append(relation) 
+
+        session.commit()
 
 
     def showDecision(self):
@@ -239,7 +258,7 @@ Bangunan:
             print("S: Buat Bom Lubang Hitam seharga ${:,} (saat ini Anda memiliki {:,})".format(self.bhbombPrice, self.bhbombs))
         
         print("\nX: Exit")
-         
+
 
     def prodMaterials(self):
         self.buildMaterials = int(self.buildMaterials+(self.prodMult*self.buildMaterialsPro))
@@ -503,38 +522,38 @@ Bangunan:
             self.explorePrice = int(1.8*self.explorePrice)
             exploreGainNum = random.randint(1,9)
             if exploreGainNum == 1:
-                self.spells.append("Sihir Kemakmuran")
+                self.addSpell("Sihir Kemakmuran")
                 print("Anda pergi menjelajah dan menemukan {:,} lahan. Anda juga menemukan buku Sihir yang mengajarkan Anda Sihir Kemakmuran!\n\n".format(landGain))
             elif exploreGainNum == 2:
-                self.spells.append("Sihir Kesuburan")
+                self.addSpell("Sihir Kesuburan")
                 print("Anda pergi menjelajah dan menemukan {:,} lahan. Anda juga menemukan buku Sihir yang mengajarkan Anda Sihir Kesuburan!\n\n".format(landGain))
             elif exploreGainNum == 3:
-                self.spells.append("Sihir Kekayaan")
+                self.addSpell("Sihir Kekayaan")
                 print("Anda pergi menjelajah dan menemukan {:,} lahan. Anda juga menemukan buku Sihir yang mengajarkan Anda Sihir Kekayaan!\n\n".format(landGain))
             elif exploreGainNum == 4:
-                self.spells.append("Sihir Kerja")
+                self.addSpell("Sihir Kerja")
                 print("Anda pergi menjelajah dan menemukan {:,} lahan. Anda juga menemukan buku Sihir yang mengajarkan Anda Sihir Kerja!\n\n".format(landGain))
             elif exploreGainNum == 5:
                 if self.level < 5:
-                    self.spells.append("Sihir Pedang")
+                    self.addSpell("Sihir Pedang")
                     print("Anda pergi menjelajah dan menemukan {:,} lahan. Anda juga menemukan buku Sihir yang mengajarkan Anda Sihir Pedang!\n\n".format(landGain))
                 elif self.level < 10:
-                    self.spells.append("Sihir Perang")
+                    self.addSpell("Sihir Perang")
                     print("Anda pergi menjelajah dan menemukan {:,} lahan. Anda juga menemukan buku Sihir yang mengajarkan Anda Sihir Perang!\n\n".format(landGain))
                 elif self.level < 15:
-                    self.spells.append("Sihir Serangan")
+                    self.addSpell("Sihir Serangan")
                     print("Anda pergi menjelajah dan menemukan {:,} lahan. Anda juga menemukan buku Sihir yang mengajarkan Anda Sihir Serangan!\n\n".format(landGain))
                 elif self.level < 20:
-                    self.spells.append("Sihir Pertahanan")
+                    self.addSpell("Sihir Pertahanan")
                     print("Anda pergi menjelajah dan menemukan {:,} lahan. Anda juga menemukan buku Sihir yang mengajarkan Anda Sihir Pertahanan!\n\n".format(landGain))
                 elif self.level < 25:
-                    self.spells.append("Sihir Kehancuran")
+                    self.addSpell("Sihir Kehancuran")
                     print("Anda pergi menjelajah dan menemukan {:,} lahan. Anda juga menemukan buku Sihir yang mengajarkan Anda Sihir Kehancuran!\n\n".format(landGain))
                 elif self.level < 30:
-                    self.spells.append("Sihir Kebusukan")
+                    self.addSpell("Sihir Kebusukan")
                     print("Anda pergi menjelajah dan menemukan {:,} lahan. Anda juga menemukan buku Sihir yang mengajarkan Anda Sihir Kebusukan!\n\n".format(landGain))
                 else:
-                    self.spells.append("Sihir Kematian")
+                    self.addSpell("Sihir Kematian")
                     print("Anda pergi menjelajah dan menemukan {:,} lahan. Anda juga menemukan buku Sihir yang mengajarkan Anda Sihir Kematian!\n\n".format(landGain))
             else:
                 print("Anda pergi menjelajah dan menemukan {:,} lahan.".format(landGain))
@@ -583,38 +602,38 @@ Bangunan:
         elif wildCard == 8:
             sp = random.randint(1,5)
             if sp == 1:
-                self.spells.append("Sihir Kemakmuran")
+                self.addSpell("Sihir Kemakmuran")
                 print("Anda mendapatkan Sihir Kemakmuran! Sihir ini akan menaikkan level Anda 1 level dalam produksi makanan.\n\n")
             elif self.sp == 2:
-                self.spells.append("Sihir Kesuburan")
+                self.addSpell("Sihir Kesuburan")
                 print("Anda mendapatkan Sihir Kesuburan! Sihir ini akan memberikan Anda 100 populasi.\n\n")
             elif sp == 3:
-                self.spells.append("Sihir Kekayaan")
+                self.addSpell("Sihir Kekayaan")
                 print("Anda mendapatkan Sihir Kekayaan! Sihir ini akan menaikkan level Anda 1 level dalam produksi uang.\n\n")
             elif sp == 4:
-                self.spells.append("Sihir Kerja")
+                self.addSpell("Sihir Kerja")
                 print("Anda mendapatkan Sihir Kerja! Sihir ini akan menaikkan level Anda 1 level dalam produksi bahan bangunan.\n\n")
             elif sp == 5:
                 if self.level < 5:
-                    self.spells.append("Sihir Pedang")
+                    self.addSpell("Sihir Pedang")
                     print("Anda mendapatkan Sihir Pedang! Sihir ini akan memberikan anda 1.1 kali poin perang anda dalam pertempuran.\n\n")            
                 elif self.level<10:
-                    self.spells.append("Sihir Perang")
+                    self.addSpell("Sihir Perang")
                     print("Anda mendapatkan Sihir Perang! Sihir ini akan memberikan Anda 1.5 kali poin perang Anda dalam pertempuran.\n\n")
                 elif self.level<15:
-                    self.spells.append("Sihir Serangan")
+                    self.addSpell("Sihir Serangan")
                     print("Anda mendapatkan Sihir Serangan! Sihir ini akan memberikan Anda 1.7 kali poin perang Anda dalam pertempuran.\n\n")
                 elif self.level<20:
-                    self.spells.append("Sihir Pertahanan")
+                    self.addSpell("Sihir Pertahanan")
                     print("Kamu mendapatkan Sihir Pertahanan! Sihir ini akan memberikan Anda 2 kali poin perang Anda dalam pertempuran.\n\n")
                 elif self.level<25:
-                    self.spells.append("Sihir Kehancuran")
+                    self.addSpell("Sihir Kehancuran")
                     print("Anda mendapatkan Sihir Kehancuran! Sihir ini akan memberikan Anda 2.5 kali poin perang Anda dalam pertempuran.\n\n")
                 elif self.level<30:
-                    self.spells.append("Sihir Kebusukan")
+                    self.addSpell("Sihir Kebusukan")
                     print("Anda mendapatkan Sihir Kebusukan! Sihir ini akan memberikan Anda 2.7 kali poin perang Anda dalam pertempuran.\n\n")
                 else:
-                    self.spells.append("Sihir Kematian")
+                    self.addSpell("Sihir Kematian")
                     print("Kamu mendapatkan Sihir Kematian! Sihir ini akan memberikan Anda 3 kali poin perang Anda dalam pertempuran.\n\n")
         else:
             self.points -= self.points+1
