@@ -30,12 +30,15 @@ class Player(Base):
     kingdom = relationship("Kingdom", back_populates="ruler", uselist=False)
 
 
-kingdom_spell_relation = Table(
-    "spell_kingdom_relation",
-    Base.metadata,
-    Column("kingdom_id", ForeignKey("kingdom.id"), primary_key=True),
-    Column("spell_id", ForeignKey("spell.id"), primary_key=True),
-)
+class KingdomSpellRelation(Base):
+    __tablename__ = "spell_kingdom_relation"
+
+    kingdom_id = Column(ForeignKey("kingdom.id"), primary_key=True)
+    spell_id = Column(ForeignKey("spell.id"), primary_key=True)
+
+    kingdom = relationship("Kingdom", back_populates="spells")
+
+    spell = relationship("Spell", back_populates="kingdoms")
 
 
 class Spell(Base):
@@ -43,20 +46,20 @@ class Spell(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String(50))
-    kingdoms = relationship(
-        "Kingdom", secondary=kingdom_spell_relation, back_populates="spells"
-    )
+    kingdom = relationship("KingdomSpellRelation", back_populates="spell")
 
     def __str__(self):
         return self.name
 
 
-kingdom_building_relation = Table(
-    "building_kingdom_relation",
-    Base.metadata,
-    Column("kingdom_id", ForeignKey("kingdom.id"), primary_key=True),
-    Column("building_id", ForeignKey("building.id"), primary_key=True),
-)
+class KingdomBuildingRelation(Base):
+    __tablename__ = "building_kingdom_relation"
+    
+    kingdom_id = Column(ForeignKey("kingdom.id"), primary_key=True)
+    building_id = Column(ForeignKey("building.id"), primary_key=True)
+
+    kingdom = relationship("Kingdom", back_populates="buildings")
+    building = relationship("Building", back_populates="kingdoms")
 
 
 class Building(Base):
@@ -64,9 +67,8 @@ class Building(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String(50))
-    kingdoms = relationship(
-        "Kingdom", secondary=kingdom_building_relation, back_populates="buildings"
-    )
+
+    kingdoms = relationship("KingdomBuildingRelation", back_populates="building")
 
     def __str__(self):
         return self.name
@@ -84,7 +86,7 @@ class Kingdom(Base):
 
     ruler = relationship("Player", back_populates="kingdom")
 
-    days = Column(Integer, default=1)    
+    day = Column(Integer, default=1)    
     age = Column(String(50), default="Zaman Batu")
     diffMult = Column(Float, default=1)
     prodMult = Column(Float, default=1)
@@ -161,13 +163,9 @@ class Kingdom(Base):
     foodProUpgradePrice = Column(Integer, default=50)
     foodProLevel = Column(Integer, default=1)
 
-    spells = relationship(
-        "Spell", secondary=kingdom_spell_relation, back_populates="kingdoms"
-    )
+    spells = relationship("KingdomSpellRelation", back_populates="kingdom")
 
-    buildings = relationship(
-        "Building", secondary=kingdom_building_relation, back_populates="kingdoms"
-    )
+    buildings = relationship("KingdomBuildingRelation", back_populates="kingdom")
 
 
     def __str__(self):
@@ -196,6 +194,19 @@ Bangunan:
 {buildingsLS}
 
 """
+
+
+    def addSpell(self, spellName):
+        spell = session.execute(
+            select(Spell).where(Spell.name == spellName)
+            ).fetchone()
+        
+        relation = KingdomSpellRelation(spell=spell)
+
+        self.spells_relation.append(relation) 
+
+        session.commit()
+
 
 
     def showDecision(self):
@@ -616,29 +627,30 @@ Bangunan:
 
 Base.metadata.create_all(engine)
 
-session.add_all([
-    Spell(name="Sihir Kemakmuran"),
-    Spell(name="Sihir Kesuburan"),
-    Spell(name="Sihir Kekayaan"),
-    Spell(name="Sihir Kerja"),
-    Spell(name="Sihir Pedang"),
-    Spell(name="Sihir Perang"),
-    Spell(name="Sihir Serangan"),
-    Spell(name="Sihir Pertahanan"),
-    Spell(name="Sihir Kehancuran"),
-    Spell(name="Sihir Kebusukan"),
-    Spell(name="Sihir Kematian"),
-    Building(name="Monolit Batu"),
-    Building(name="Orang-orangan Sawah"),
-    Building(name="Patung Bayi"),
-    Building(name="Patung Pembangun"),
-    Building(name="Altar Pengorbanan"),
-    Building(name="Kedutaan"),
-    Building(name="Bazaar"),
-    Building(name="Kuil"),
-    Building(name="Menara Bisnis"),
-    Building(name="Menara Kas"),
-    Building(name="Monumen Kehidupan"),
-])
+# Harus dijalankan satu kali saja
+# session.add_all([
+#     Spell(name="Sihir Kemakmuran"),
+#     Spell(name="Sihir Kesuburan"),
+#     Spell(name="Sihir Kekayaan"),
+#     Spell(name="Sihir Kerja"),
+#     Spell(name="Sihir Pedang"),
+#     Spell(name="Sihir Perang"),
+#     Spell(name="Sihir Serangan"),
+#     Spell(name="Sihir Pertahanan"),
+#     Spell(name="Sihir Kehancuran"),
+#     Spell(name="Sihir Kebusukan"),
+#     Spell(name="Sihir Kematian"),
+#     Building(name="Monolit Batu"),
+#     Building(name="Orang-orangan Sawah"),
+#     Building(name="Patung Bayi"),
+#     Building(name="Patung Pembangun"),
+#     Building(name="Altar Pengorbanan"),
+#     Building(name="Kedutaan"),
+#     Building(name="Bazaar"),
+#     Building(name="Kuil"),
+#     Building(name="Menara Bisnis"),
+#     Building(name="Menara Kas"),
+#     Building(name="Monumen Kehidupan"),
+# ])
 
 session.commit()
