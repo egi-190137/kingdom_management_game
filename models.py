@@ -216,6 +216,17 @@ Bangunan:
         session.commit()
 
 
+    def removeSpell(self, spellName):
+        relation = session.execute(
+            select(KingdomSpellRelation).where(
+                KingdomSpellRelation.spell.name==spellName)
+        ).fetchone()[0]
+
+        self.spell_rellations.remove(relation)
+
+        session.commit()
+
+
     def addBuilding(self, buildingName):
         building = session.execute(
             select(Building).where(Building.name == buildingName)
@@ -640,6 +651,140 @@ Bangunan:
             print("Seorang penyihir jahat menyebabkan poin Anda turun di bawah 0 jadi sekarang Anda turun level.")
         
         session.commit()
+
+
+    def useSpell(self):
+        print("Berikut adalah Sihir yang Anda miliki:")
+        
+        mySpellName = [ spell.name for spell in self.getAllSpells() ]
+        for spell in list(set(mySpellName)):
+            print("- {}".format(spell))
+        
+        print("A: Sihir Kemakmuran")
+        print("B: Sihir Kesuburan")
+        print("C: Sihir Kekayaan")
+        print("D: Sihir Kerja")
+        print("E: Sihir Pedang")
+
+        if self.level < 10:
+            print("F: Sihir Perang")
+        if self.level < 15:
+            print("G: Sihir Serangan")
+        if self.level < 20:
+            print("H: Sihir Pertahanan")
+        if self.level < 25:
+            print("I: Sihir Penghancuran")
+        if self.level < 30:
+            print("J: Sihir Kebusukan")
+        if self.level >= 30:
+            print("K: Sihir Kematian")
+        
+        spe = str(input("Pilih salah satu spell : "))
+        spe = spe.lower()
+        
+        if spe == "a":
+            if "Sihir Kemakmuran" in mySpellName:
+                playsound('sounds/godong.wav')
+                print("Anda tiba-tiba mendengar suara tanaman yang tumbuh...\n\n")
+                self.foodProLevel += 1
+                self.foodPro += (100*self.foodProLevel)
+                self.removeSpell("Sihir Kemakmuran")
+            else:
+                print("Anda tidak memiliki Sihir ini!\n\n")
+                self.points -= self.level*50
+        elif spe == "b":
+            if "Sihir Kesuburan" in mySpellName:
+                playsound('sounds/babywhine1-6318.wav')
+                print("Anda tiba-tiba mendengar suara tangisan bayi...\n\n")
+                self.population += 100
+                self.removeSpell("Sihir Kesuburan")
+            else:
+                print("Anda tidak memiliki Sihir ini!\n\n")
+                self.points -= self.level*50
+        elif spe == "c":
+            if "Sihir Kekayaan" in mySpellName:
+                playsound('sounds/cha-ching-7053_1.wav')
+                print("Anda tiba-tiba mendengar suara koin bergemerincing...\n\n")
+                self.moneyProLevel += 1
+                self.moneyProLevel += int((1.5*self.moneyProLevel))
+                self.removeSpell("Sihir Kekayaan")
+            else:
+                print("Anda tidak memiliki Sihir ini!\n\n")
+                self.points -= self.level*50
+        elif spe == "d":
+            if "Sihir Kerja" in mySpellName:
+                playsound('sounds/palu.wav')
+                print("Anda tiba-tiba mendengar suara palu berdenting...\n\n")
+                self.buildProLevel += 1
+                self.buildMaterialsPro += int((1.5*self.buildProLevel))
+                self.removeSpell("Sihir Kerja")
+            else:
+                print("Anda tidak memiliki Sihir ini!\n\n")
+                self.points -= self.level*50
+        elif spe == "e":
+            if "Sihir Pedang" in mySpellName:
+                playsound('sounds/swingg.wav')
+                print("Anda tiba-tiba mendengar suara pedang yang berdesir...\n\n")
+                self.sword = 1.1
+                self.removeSpell("Sihir Pedang")
+            else:
+                print("Anda tidak memiliki Sihir ini!\n\n")
+                self.points -= self.level*50
+        elif spe == "f":
+            if "Sihir Perang" in mySpellName:
+                playsound('sounds/auuu.wav')
+                print("Anda tiba-tiba mendengar suara teriakan pertempuran...\n\n")
+                self.warMult = 1.5
+                self.removeSpell("Sihir Perang")
+            else:
+                print("Anda tidak memiliki Sihir ini!\n\n")
+                self.points -= self.level*50
+        elif spe == "g":
+            if "Sihir Serangan" in mySpellName:
+                playsound('sounds/auuu.wav')
+                print("Anda tiba-tiba mendengar suara pasukan yang bergegas ke medan perang...\n\n")
+                self.attack = 1.7
+                self.removeSpell("Sihir Serangan")
+            else:
+                print("Anda tidak memiliki Sihir ini!\n\n")
+                self.points -= self.level*50
+        elif spe == "h":
+            if "Sihir Pertahanan" in mySpellName:
+                playsound('sounds/sword-battle-jingle-loop-96983.wav')
+                print("Anda tiba-tiba mendengar suara pedang mengenai perisai...\n\n")
+                self.defense = 2
+                self.removeSpell("Sihir Pertahanan")
+            else:
+                print("Anda tidak memiliki Sihir ini!\n\n")
+                self.points -= self.level*50
+        elif spe == "i":
+            if "Sihir Kehancuran" in mySpellName:
+                playsound('sounds/rock-destroy-6409.wav')
+                print("Anda tiba-tiba mendengar suara bangunan runtuh...\n\n")
+                self.destruction = 2.5
+                self.removeSpell("Sihir Kehancuran")
+            else:
+                print("Anda tidak memiliki Sihir ini!\n\n")
+                self.points -= self.level*50
+        elif spe == "j":
+            if "Sihir Kebusukan" in mySpellName:
+                playsound('sounds/wither.wav')
+                print("Anda tiba-tiba melihat banyak kehiduan layu...\n\n")
+                self.waste = 2.7
+                self.removeSpell("Sihir Kebusukan")
+            else:
+                print("Anda tidak memiliki Sihir ini!\n\n")
+                self.points -= self.level*50
+        elif spe == "k":
+            if "Sihir Kematian" in mySpellName:
+                playsound('sounds/demonic-woman-scream-6333.wav')
+                print("Anda tiba-tiba mendengar suara jeritan...\n\n")
+                self.death = 3
+                self.removeSpell("Sihir Kematian")
+            else:
+                print("Anda tidak memiliki Sihir ini!\n\n")
+                self.points -= self.level*50
+    
 
 
 

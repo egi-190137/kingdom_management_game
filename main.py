@@ -78,7 +78,7 @@ enemybhbombs=0
 # birthres=0
 # foodres=0
 # foodprocan=True
-spells=[]
+# spells=[]
 sword=1
 # war2=1 => warMult
 attack=1
@@ -329,150 +329,10 @@ while not kingdom.endGame:
 
     elif dailydecision == "i":
         kingdom.randomEvent()
-         
+
     elif dailydecision == "j":
-        print("Berikut adalah Sihir yang Anda miliki:")
+        kingdom.useSpell()
         
-        for spell in list(set(spells)):
-            print("- {}".format(spell))
-        
-        print("A: Sihir Kemakmuran")
-        print("B: Sihir Kesuburan")
-        print("C: Sihir Kekayaan")
-        print("D: Sihir Kerja")
-        print("E: Sihir Pedang")
-
-        if level < 10:
-            print("F: Sihir Perang")
-        if level < 15:
-            print("G: Sihir Serangan")
-        if level < 20:
-            print("H: Sihir Pertahanan")
-        if level < 25:
-            print("I: Sihir Penghancuran")
-        if level < 30:
-            print("J: Sihir Kebusukan")
-        if level >= 30:
-            print("K: Sihir Kematian")
-        
-        spe = str(input("Pilih salah satu spell : "))
-        spe = spe.lower()
-        
-        if spe=="a":
-            if "Sihir Kemakmuran" in spells:
-                playsound('sounds/godong.wav')
-                print("Anda tiba-tiba mendengar suara tanaman yang tumbuh...\n\n")
-                foodprolevel += 1
-                foodpro += (100*foodprolevel)
-                thing = spells.index("Sihir Kemakmuran")
-                spells.pop(thing)
-            else:
-                print("Anda tidak memiliki Sihir ini!\n\n")
-                points -= level*50
-        elif spe=="b":
-            if "Sihir Kesuburan" in spells:
-                playsound('sounds/babywhine1-6318.wav')
-                print("Anda tiba-tiba mendengar suara tangisan bayi...\n\n")
-                pop += 100
-                thing = spells.index("Sihir Kesuburan")
-                spells.pop(thing)
-            else:
-                print("Anda tidak memiliki Sihir ini!\n\n")
-                points -= level*50
-        elif spe=="c":
-            if "Sihir Kekayaan" in spells:
-                playsound('sounds/cha-ching-7053_1.wav')
-                print("Anda tiba-tiba mendengar suara koin bergemerincing...\n\n")
-                moneyprolevel += 1
-                moneypro += int((1.5*moneyprolevel))
-                thing = spells.index("Sihir Kekayaan")
-                spells.pop(thing)
-            else:
-                print("Anda tidak memiliki Sihir ini!\n\n")
-                points -= level*50
-        elif spe=="d":
-            if "Sihir Kerja" in spells:
-                playsound('sounds/palu.wav')
-                print("Anda tiba-tiba mendengar suara palu berdenting...\n\n")
-                buildprolevel += 1
-                buildmaterialspro += int((1.5*buildprolevel))
-                thing = spells.index("Sihir Kerja")
-                spells.pop(thing)
-            else:
-                print("Anda tidak memiliki Sihir ini!\n\n")
-                points -= level*50
-        elif spe=="e":
-            if "Sihir Pedang" in spells:
-                playsound('sounds/swingg.wav')
-                print("Anda tiba-tiba mendengar suara pedang yang berdesir...\n\n")
-                sword = 1.1
-                thing = spells.index("Sihir Pedang")
-                spells.pop(thing)
-            else:
-                print("Anda tidak memiliki Sihir ini!\n\n")
-                points -=level*50
-        elif spe=="f":
-            if "Sihir Perang" in spells:
-                playsound('sounds/auuu.wav')
-                print("Anda tiba-tiba mendengar suara teriakan pertempuran...\n\n")
-                war2 = 1.5
-                thing = spells.index("Sihir Perang")
-                spells.pop(thing)
-            else:
-                print("Anda tidak memiliki Sihir ini!\n\n")
-                points -= level*50
-        elif spe=="g":
-            if "Sihir Serangan" in spells:
-                playsound('sounds/auuu.wav')
-                print("Anda tiba-tiba mendengar suara pasukan yang bergegas ke medan perang...\n\n")
-                attack = 1.7
-                thing = spells.index("Sihir Serangan")
-                spells.pop(thing)
-            else:
-                print("Anda tidak memiliki Sihir ini!\n\n")
-                points -= level*50
-        elif spe=="h":
-            if "Sihir Pertahanan" in spells:
-                playsound('sounds/sword-battle-jingle-loop-96983.wav')
-                print("Anda tiba-tiba mendengar suara pedang mengenai perisai...\n\n")
-                defense = 2
-                thing=spells.index("Sihir Pertahanan")
-                spells.pop(thing)
-            else:
-                print("Anda tidak memiliki Sihir ini!\n\n")
-                points -= level*50
-        elif spe=="i":
-            if "Sihir Kehancuran" in spells:
-                playsound('sounds/rock-destroy-6409.wav')
-                print("Anda tiba-tiba mendengar suara bangunan runtuh...\n\n")
-                destruction = 2.5
-                thing = spells.index("Sihir Kehancuran")
-                spells.pop(thing)
-            else:
-                print("Anda tidak memiliki Sihir ini!\n\n")
-                points -= level*50
-        elif spe=="j":
-            if "Sihir Kebusukan" in spells:
-                playsound('sounds/wither.wav')
-                print("Anda tiba-tiba melihat banyak kehiduan layu...\n\n")
-                waste = 2.7
-                thing = spells.index("Sihir Kebusukan")
-                spells.pop(thing)
-            else:
-                print("Anda tidak memiliki Sihir ini!\n\n")
-                points -=level*50
-
-        elif spe=="k":
-            if "Sihir Kematian" in spells:
-                playsound('sounds/demonic-woman-scream-6333.wav')
-                print("Anda tiba-tiba mendengar suara jeritan...\n\n")
-                death = 3
-                thing = spells.index("Sihir Kematian")
-                spells.pop(thing)
-            else:
-                print("Anda tidak memiliki Sihir ini!\n\n")
-                points -= level*50
-    
     elif dailydecision == "k":
         print("Hukum apa yang ingin Anda ubah?")
         print("A: Hukum kelahiran")
