@@ -9,7 +9,6 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 
-# from functions import *
 from models import *
 
 mixer.init()
@@ -17,82 +16,9 @@ mixer.music.load('sounds/Main.mp3')
 mixer.music.play()
 
 
-# engine = create_engine("sqlite:///game.db", echo=True, future=True)
 engine = create_engine("mysql+pymysql://root:@localhost/clash_of_clans", echo=True)
 
 session = Session(engine)
-
-# age="Zaman Batu"
-relationship=5
-# endgame=False
-# soldiers=0
-# soldierprice=100
-# points=0
-# level=166
-# levelup=200
-popgrowth=5
-enemypopgrowth=5
-# popdeath=1
-enemypopdeath=2
-# deathcan=True
-# land=1
-# buildmaterials=5000000
-# buildmaterialspro=1
-# money=500000000
-# day=1
-# pop=300
-# buildproupgradeprice=10
-# buildprolevel=1
-# moneypro=1
-# moneyprolevel=1
-# moneyproupgradeprice=10
-# defenselevel=1
-# defenseupgradeprice=10
-# defenseupgradebuildcost=10
-enemypop=300
-enemydefenselevel=1
-# exploreprice=10
-defenseupgradelandcost=1
-enemysoldiers=0
-# mortars=0
-# mortarprice=500
-enemymortars=0
-# missiles=0
-# missileprice=2000
-enemymissiles=0
-# nukes=0
-# nukeprice=7000
-enemynukes=0
-# hbombs=0
-# hbombprice=10000
-enemyhbombs=0
-# bhbombs=0
-# bhbombprice=20000
-enemybhbombs=0
-# food=300
-# foodpro=300
-# foodproupgradeprice=50
-# foodprolevel=1
-# daysuntil=0
-# birth=True
-# birthres=0
-# foodres=0
-# foodprocan=True
-# spells=[]
-sword=1
-# war2=1 => warMult
-attack=1
-defense=1
-destruction=1
-waste=1
-death=1
-# consumpmult=1
-# prodmult=1
-# birthmult=1
-# diffmult=1
-buildingsL=[]
-popadd=0
-# deathadd=0
 
 builts = [ "Belum dibangun" for _ in range(11) ]
 
@@ -332,7 +258,7 @@ while not kingdom.endGame:
 
     elif dailydecision == "j":
         kingdom.useSpell()
-        
+
     elif dailydecision == "k":
         print("Hukum apa yang ingin Anda ubah?")
         print("A: Hukum kelahiran")
