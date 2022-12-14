@@ -252,21 +252,20 @@ Bangunan:
         print("I: Kejadian Random")
         print("J: Mengeluarkan Sihir")
         print("K: Mengatur hukum lahan")
-        print("L: Kelola hubungan perjanjian")
-        print("M: Membangun sesuatu")
+        print("L: Membangun sesuatu")
         
         if self.level>=5:
-            print("N: Latih Prajurit seharga ${:,} (saat ini Anda memiliki {:,})".format(self.soldierPrice, self.soldiers))
+            print("M: Latih Prajurit seharga ${:,} (saat ini Anda memiliki {:,})".format(self.soldierPrice, self.soldiers))
         if self.level>=10:
-            print("O: Buat Mortir seharga ${:,} (saat ini Anda memiliki {:,})".format(self.mortarPrice, self.mortars))
+            print("N: Buat Mortir seharga ${:,} (saat ini Anda memiliki {:,})".format(self.mortarPrice, self.mortars))
         if self.level>=15:
-            print("P: Buat Rudal seharga ${:,} (saat ini Anda memiliki {:,})".format(self.missilePrice, self.missiles))
+            print("O: Buat Rudal seharga ${:,} (saat ini Anda memiliki {:,})".format(self.missilePrice, self.missiles))
         if self.level>=20:
-            print("Q: Buat Nuklir seharga ${:,} (saat ini Anda memiliki {:,})".format(self.nukePrice, self.nukes))
+            print("P: Buat Nuklir seharga ${:,} (saat ini Anda memiliki {:,})".format(self.nukePrice, self.nukes))
         if self.level>=25:
-            print("R: Buat Bom H seharga ${:,} (saat ini Anda memiliki {:,})".format(self.hbombPrice, self.hbombs))
+            print("Q: Buat Bom H seharga ${:,} (saat ini Anda memiliki {:,})".format(self.hbombPrice, self.hbombs))
         if self.level>=30:
-            print("S: Buat Bom Lubang Hitam seharga ${:,} (saat ini Anda memiliki {:,})".format(self.bhbombPrice, self.bhbombs))
+            print("R: Buat Bom Lubang Hitam seharga ${:,} (saat ini Anda memiliki {:,})".format(self.bhbombPrice, self.bhbombs))
         
         print("\nX: Exit")
 
@@ -784,6 +783,46 @@ Bangunan:
             else:
                 print("Anda tidak memiliki Sihir ini!\n\n")
                 self.points -= self.level*50
+    
+    def changeLaw(self):
+        print("Hukum apa yang ingin Anda ubah?")
+        print("A: Hukum kelahiran")
+        print("B: Hukum kerja")
+        d = input()
+        d = d.lower()
+        if d == "a":
+            print("Bagian apa yang ingin Anda ubah?")
+            print("A: Ubah hukum kelahiran menjadi Terbatas (1/2x reguler)")
+            print("B: Ubah hukum kelahiran menjadi Reguler (default)")
+            print("C: Ubah hukum kelahiran menjadi Berlimpah (2x reguler)")
+            d1 = input()
+            d1 = d1.lower()
+            if d1 == "a":
+                self.birthMult = 0.5
+            elif d1 == "c":
+                self.birthMult = 2
+            else:
+                self.birthMult = 1
+            
+            print("Berhasil diubah!")
+        else:
+            print("Bagian apa yang ingin Anda ubah?")
+            print("A: Ubah hukum kerja menjadi Lambat (orang mengkonsumsi x1/2 makanan dari biasanya, tetapi produksi uang dan bahan bangunan x1/2)")
+            print("B: Ubah hukum kerja menjadi Reguler (default)")
+            print("C: Ubah hukum kerja menjadi Efisien (produksi uang dan bahan bangunan x2, tetapi orang mengkonsumsi makanan x2 lebih banyak dari biasanya)")
+            d1 = str(input())
+            d1 = d1.lower()
+            if d1 == "a":
+                self.consumpMult = 0.5
+                self.prodMult = 0.5
+            elif d1 == "c":
+                self.consumpMult = 2
+                self.prodMult = 2
+            else:
+                self.consumpMult = 1
+                self.prodMult = 1
+
+            print("Berhasil diubah!")
     
 
 

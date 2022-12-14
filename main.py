@@ -46,6 +46,11 @@ if pilih == 1:
         else:
             print("\n\nAnda berhasil login")
             break
+    
+    kingdom = player.kingdom
+    if kingdom.endGame:
+        print("Kerajaan anda  telah  berakhir")
+        sys.exit()
         
 elif pilih == 2:
     username = input("Masukkan username : ")
@@ -60,41 +65,42 @@ elif pilih == 2:
     session.add(player)
     session.commit()
 
+    print("\n\nSelamat datang di Kingdoms, sebuah permainan kerajaan di mana Anda meningkatkan, menaikkan level, dan mencoba mengalahkan musuh-musuh Anda.\n")
+    time.sleep(1)
+
+    # Cek apakah baru memulai game atau tidak
+    # Jika baru maka tampilkan pilihan kesulitan
+    print("Silakan pilih tingkat kesulitan lawan:")
+    print("1: Super Mudah")
+    print("2: Mudah")
+    print("3: Normal")
+    print("4: Susah")
+    print("5: Sangat Susah")
+
+    d = int(input())
+
+    if d == 1:
+        diffmult = 2
+    elif d == 2:
+        diffmult = 1.5
+    elif d == 4:
+        diffmult = 0.7
+    elif d == 5:
+        diffmult = 0.5
+    else:
+        diffmult = 1
+
+    kingdom_name = input("Apa nama kerajaan Anda?: ")
+    player.kingdom = Kingdom(name=kingdom_name, diffMult=diffmult)
+
+    kingdom = player.kingdom
+    session.add(kingdom)
+    session.commit()
+
 else:
     sys.exit()
 
 
-print("\n\nSelamat datang di Kingdoms, sebuah permainan kerajaan di mana Anda meningkatkan, menaikkan level, dan mencoba mengalahkan musuh-musuh Anda.\n")
-time.sleep(1)
-
-# Cek apakah baru memulai game atau tidak
-# Jika baru maka tampilkan pilihan kesulitan
-print("Silakan pilih tingkat kesulitan lawan:")
-print("1: Super Mudah")
-print("2: Mudah")
-print("3: Normal")
-print("4: Susah")
-print("5: Sangat Susah")
-
-d = int(input())
-
-if d == 1:
-    diffmult = 2
-elif d == 2:
-    diffmult = 1.5
-elif d == 4:
-    diffmult = 0.7
-elif d == 5:
-    diffmult = 0.5
-else:
-    diffmult = 1
-
-kingdom_name = input("Apa nama kerajaan Anda?: ")
-player.kingdom = Kingdom(name=kingdom_name, diffMult=diffmult)
-
-kingdom = player.kingdom
-session.add(kingdom)
-session.commit()
 
 print()
 print("Selamat datang {}, penguasa {}.\n".format(kingdom.ruler, kingdom.name))
@@ -171,45 +177,12 @@ while not kingdom.endGame:
         
         time.sleep(2)
     
-    # enemypopgrowth  = int(enemypop/90)
-    # enemypopdeath   = int(enemypop/150)
     kingdom.prodMaterials()
     kingdom.makeMoney()
     kingdom.birthPopulation()
     kingdom.deathPopulation()
     kingdom.prodFood()
     kingdom.consumeFood()    
-    # enemypop += enemypopgrowth
-    # enemypop -= enemypopdeath
-    
-    # <!------Masih perlu diganti-----!>
-    # <!------AWAL-----!>
-    r = [ int(x*diffmult) for x in (40, 40, 50, 70, 100, 150, 200) ]
-
-    ranint = [ random.randint(1, x) for x in r ]
-
-    if ranint[0] == 1:
-        enemydefenselevel = enemydefenselevel+1
-    
-    if kingdom.level>=5:
-        if ranint[1] == 1:
-            enemysoldiers += 1
-    if kingdom.level>=10:
-        if ranint[2] == 1:
-            enemymortars += 1
-    if kingdom.level>=15:
-        if ranint[3] == 1:
-            enemymissiles += 1
-    if kingdom.level>=20:
-        if ranint[4] == 1:
-            enemynukes += 1
-    if kingdom.level>=25:
-        if ranint[5] == 1:
-            enemyhbombs += 1
-    if kingdom.level>=30:
-        if ranint[6] == 1:
-            enemybhbombs += 1
-    # <!------AKHIR------!>
 
     print(kingdom)
     print()
@@ -260,89 +233,9 @@ while not kingdom.endGame:
         kingdom.useSpell()
 
     elif dailydecision == "k":
-        print("Hukum apa yang ingin Anda ubah?")
-        print("A: Hukum kelahiran")
-        print("B: Hukum kerja")
-        d = str(input())
-        d = d.lower()
-        if d == "a":
-            print("Bagian apa yang ingin Anda ubah?")
-            print("A: Ubah hukum kelahiran menjadi Terbatas (1/2x reguler)")
-            print("B: Ubah hukum kelahiran menjadi Reguler (default)")
-            print("C: Ubah hukum kelahiran menjadi Berlimpah (2x reguler)")
-            d1 = str(input())
-            d1 = d1.lower()
-            if d1=="a":
-                birthmult = 0.5
-            elif d1=="c":
-                birthmult = 2
-            else:
-                birthmult = 1
-            
-            print("Berhasil diubah!")
-        else:
-            print("Bagian apa yang ingin Anda ubah?")
-            print("A: Ubah hukum kerja menjadi Lambat (orang mengkonsumsi x1/2 makanan dari biasanya, tetapi produksi uang dan bahan bangunan x1/2)")
-            print("B: Ubah hukum kerja menjadi Reguler (default)")
-            print("C: Ubah hukum kerja menjadi Efisien (produksi uang dan bahan bangunan x2, tetapi orang mengkonsumsi makanan x2 lebih banyak dari biasanya)")
-            d2 = str(input())
-            d2 = d2.lower()
-            if d2 == "a":
-                consumpmult = 0.5
-                prodmult = 0.5
-            elif d2 == "c":
-                consumpmult = 2
-                prodmult = 2
-            else:
-                consumpmult = 1
-                prodmult = 1
+        kingdom.changeLaw()
 
-            print("Berhasil diubah!")
-    
     elif dailydecision == "l":
-        print("Apa yang ingin Anda lakukan?")
-        print("1: Membatalkan perjanjian yang sudah ada")
-        print("2: Mengusulkan perjanjian")
-        t = int(input())
-        
-        if t == 1:
-            if tradewith == 0:
-                print("Tidak ada perjanjian untuk membatalkan!")
-            else:
-                tradewith = 0
-                relationship -= 1
-                print("Perjanjian dibatalkan!")
-        else:
-            if tradewith == 1:
-                print("Anda sudah memiliki perjanjian!")
-            else:                
-                if relationship <= 2:
-                    if relationship <= 0:
-                        r = random.randint(1,5)
-                    else:
-                        r = random.randint(1,3)
-
-                    if r == 1:
-                        tradewith = 1
-                        relationship=relationship+random.randint(1,2)
-                        print("{} telah dengan hati-hati menerima proposal perjanjian Anda!\n\n".format(name))
-                    else:
-                        print("{} telah menolak proposal perjanjian Anda!\n\n".format(name))
-                
-                elif relationship == 3:
-                    r = random.randint(1,3)
-                    if r == 1:
-                        print("{} telah menolak proposal perjanjian Anda!\n\n".format(name))
-                    else:
-                        tradewith = 1
-                        relationship = 4
-                        print("{} telah menerima proposal perjanjian Anda!\n\n".format(name))
-                else:
-                    tradewith = 1
-                    relationship = 5
-                    print("Perjanjian dibuat!\n\n")
-
-    elif dailydecision == "m":
         print("Bangunan yang bisa Anda bangun:")
         print("A: Batu Monolit (1 lahan, 60 bahan bangunan). Efek:\n   - +$5/hari\n   ("+builts[0]+")")
         print("B: Orang-orangan sawah (1 lahan, 60 bahan bangunan). Efek:\n   - +100 makanan/hari\n   ("+builts[1]+")")
@@ -595,7 +488,7 @@ while not kingdom.endGame:
         else:
             print("\n")
 
-    elif dailydecision == "n":
+    elif dailydecision == "m":
         if level >= 5:
             if soldierprice > money:                
                 print("Tidak cukup uang!\n\n")
@@ -611,7 +504,7 @@ while not kingdom.endGame:
             print()
             print()
 
-    elif dailydecision == "o":
+    elif dailydecision == "n":
         if level >= 10:
             if mortarprice > money:
                 print("Tidak cukup uang!\n\n")
@@ -627,7 +520,7 @@ while not kingdom.endGame:
             print()
             print()
 
-    elif dailydecision == "p":
+    elif dailydecision == "o":
         if level >= 15:
             if missileprice > money:
                 print("Tidak cukup uang!\n\n")
@@ -643,7 +536,7 @@ while not kingdom.endGame:
             print()
             print()
 
-    elif dailydecision == "q":
+    elif dailydecision == "p":
         if level >= 20:
             if nukeprice > money:
                 print("Tidak cukup uang!\n\n")
@@ -659,7 +552,7 @@ while not kingdom.endGame:
             print()
             print()
 
-    elif dailydecision == "r":
+    elif dailydecision == "q":
         if level >= 25:
             if hbombprice > money:
                 print("Tidak cukup uang!\n\n")
@@ -675,7 +568,7 @@ while not kingdom.endGame:
             print()
             print()
 
-    elif dailydecision == "s":
+    elif dailydecision == "r":
         if level >= 30:
             if bhbombprice > money:
                 print("Tidak cukup uang!\n\n")
@@ -691,8 +584,8 @@ while not kingdom.endGame:
             print()
             print()
     
-    elif dailydecision == "x":
-        kingdom.endGame = True
+]    elif dailydecision == "x":
+        break
     else:
         print()
         print()
