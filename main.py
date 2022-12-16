@@ -14,13 +14,6 @@ mixer.init()
 mixer.music.load('sounds/Main.mp3')
 mixer.music.play()
 
-
-engine = create_engine("mysql+pymysql://root:@localhost/clash_of_clans", echo=True)
-
-session = Session(engine)
-
-builts = [ "Belum dibangun" for _ in range(11) ]
-
 print("Selamat datang di Kingdoms")
 print("1. Login")
 print("2. Register")
@@ -58,7 +51,7 @@ elif pilih == 2:
     player = Player(
         username=username,
         password=password,
-        is_online=True
+        is_online=1
     )
 
     session.add(player)
@@ -183,6 +176,8 @@ while not kingdom.endGame:
     kingdom.prodFood()
     kingdom.consumeFood()    
 
+    session.commit()
+
     print(kingdom)
     print()
     
@@ -256,6 +251,8 @@ while not kingdom.endGame:
         kingdom.createBHBomb()
     
     elif dailydecision == "x":
+        player.is_online = 0
+        session.commit()
         break
     else:
         print()

@@ -1,5 +1,5 @@
 import time
-import playsound
+from playsound import playsound
 import random
 
 from sqlalchemy import Column
@@ -177,10 +177,10 @@ class Kingdom(Base):
 
 
     def __str__(self):
-        spellsS     = "\n".join([f"- {spell.name}" for spell in self.getAllSpells()])
-        buildingsLS = "\n".join([f"- {building.name}" for building in self.getAllBuildings()])
+        spell_list = "\n".join([f"- {spell.name}" for spell in self.getAllSpells()])
+        building_list = "\n".join([f"- {building.name}" for building in self.getAllBuildings()])
         
-        return f"""\nHari {self.day:,} : 
+        kingdom_info = f"""\nHari {self.day:,} : 
 {self.age}
 Level\t: {self.level:,}
 Poin\t: {self.points:,}
@@ -195,13 +195,16 @@ Angka kelahiran: {int(self.birthMult*self.popGrowth):,}/hari
 Angka kematian: {int(self.birthMult*self.popGrowth):,} (pertumbuhan populasi secara keseluruhan saat ini: {(self.birthMult*self.popGrowth)-self.popDeath:,})
 Lahan: {self.land:,}
 Populasi: {self.population:,}
-Sihir: 
-{spellsS}
-
-Bangunan: 
-{buildingsLS}
-
 """
+        if spell_list != []:
+            kingdom_info += f"""Sihir: 
+{spell_list}
+"""
+        if building_list != []:
+            kingdom_info += f"""Bangunan: 
+{building_list}
+"""
+        return kingdom_info
 
 
     def addSpell(self, spellName):
@@ -247,7 +250,7 @@ Bangunan:
 
 
     def showDecision(self):
-        print("Apa yang ingin Anda lakukan, {}?".format(self.ruler))
+        print("Apa yang ingin Anda lakukan, {}?".format(self.ruler.username))
         print("A: Tingkatkan produksi bahan bangunan seharga ${:,} (level saat ini: {:,})".format(self.buildProUpgradePrice, self.buildProLevel))
         print("B: Tingkatkan produksi uang seharga {:,} bahan bangunan (level saat ini: {:,})".format(self.moneyProUpgradePrice, self.moneyProLevel))
         print("C: Tingkatkan pertahanan seharga ${:,} dan {:,} bahan bangunan dan {:,} lahan (level saat ini: {:,})".format(self.defenseUpgradePrice, self.defenseUpgradeBuildCost, self.defenseUpgradeLandCost, self.defenseLevel))
@@ -324,15 +327,15 @@ Bangunan:
 
 
     def consumeFood(self):
-        consumption = int(self.consumpMult*self.population)
-        if self.food < consumption:
-            starved = int((consumption-food)/self.consumpMult)
+        self.consumption = int(self.consumpMult*self.population)
+        if self.food < self.consumption:
+            starved = int((self.consumption-self.food)/self.consumpMult)
             self.population -= starved
             self.food = 0
             print("Anda tidak memiliki cukup makanan, jadi {} orang meninggal karena kelaparan.".format(starved))
             time.sleep(1)
         else:
-            food = int(food-consumption)
+            self.food = int(self.food-self.consumption)
         session.commit()
 
 
@@ -438,8 +441,11 @@ Bangunan:
 
     def war(self):
         # Cari musuh secara random
-        query = select(Kingdom).where(Kingdom.id != self.id)
-        enemies = session.execute(query).scalars().all()
+        query = select(Kingdom, Player).join(Kingdom.ruler).where(
+            (Kingdom.id != 3) & (Player.is_online == 0))
+        
+        result = session.scalars(query)
+        enemies = [ data for data in result ]
 
         enemy = random.choice(enemies)
 
@@ -470,20 +476,21 @@ Bangunan:
             buildAdd    = int(0.5*winBy)+11
             landAdd     = int((0.5*winBy))
             foodAdd     = int((0.5*winBy))+50
+            popDeath    = int(0.1*self.population)
             
-            enemy.population        -= (0.5*enemy.population)
+            enemy.population        -= int(0.5*enemy.population)
             self.money              += moneyAdd
             self.buildMaterials     += buildAdd
             self.land               += landAdd
             self.food               += foodAdd
             self.points             += self.level*100
-            self.population         -= (0.1*self.population)
+            self.population         -= popDeath
             
             print("- ${:,}".format(moneyAdd))
             print("- {:,} bahan bangunan".format(buildAdd))
             print("- {:,} lahan baru".format(landAdd))
             print("- {:,} lebih banyak makanan\n".format(foodAdd))
-            print("Namun, Anda telah kehilangan {:,} orang-orang dalam perang.\n\n".format(int(0.1*self.population)))
+            print("Namun, Anda telah kehilangan {:,} orang-orang dalam perang.\n\n".format(popDeath))
             time.sleep(2)
         elif warPoints < enemyWarPoints:
             playsound('sounds/piano-crash-sound-37898.wav')
@@ -855,11 +862,11 @@ Bangunan:
         print("C: Patung Bayi (1 lahan, 120 bahan bangunan). Efek:\n   - +2 populasi/hari\n   ("+buildingInfo[2]+")")
         print("D: Patung Pembangun (1 lahan, 200 bahan bangunan). Efek:\n   - +20 bahan bangunan/hari\n   ("+buildingInfo[3]+")")
         print("E: Altar Pengorbanan (2 lahan, 350 bahan bangunan, 20 populasi). Efek:\n   - +2 kematian/hari\n   - +1000 makanan/hari\n   ("+buildingInfo[4]+")")
-        print("F: Bazaar (8 lahan, 700 bahan bangunan, $500). Efek:\n   - +$70/hari\n   - +75 bahan bangunan/hari\n   ("+buildingInfo[6]+")")
-        print("G: Kuil (16 lahan, 1000 bahan bangunan, $1000). Efek:\n   - +50 populasi/hari\n   - +$100/hari\n   - +100 bahan bangunan/hari\n   ("+buildingInfo[7]+")")
-        print("H: Menara Bisnis (32 lahan, 3000 bahan bangunan). Efek:\n   - +500 bahan bangunan/hari\n   ("+buildingInfo[8]+")")
-        print("I: Menara Tunai (32 lahan, $3000). Efek:\n   - +$500/hari\n   ("+buildingInfo[9]+")")
-        print("J: Monumen Kehidupan (64 lahan, 5000 bahan bangunan, $5000). Efek:\n   - Orang tidak lagi mati (kecuali orang yang mati sebagai korban)\n   ("+buildingInfo[10]+")")
+        print("F: Bazaar (8 lahan, 700 bahan bangunan, $500). Efek:\n   - +$70/hari\n   - +75 bahan bangunan/hari\n   ("+buildingInfo[5]+")")
+        print("G: Kuil (16 lahan, 1000 bahan bangunan, $1000). Efek:\n   - +50 populasi/hari\n   - +$100/hari\n   - +100 bahan bangunan/hari\n   ("+buildingInfo[6]+")")
+        print("H: Menara Bisnis (32 lahan, 3000 bahan bangunan). Efek:\n   - +500 bahan bangunan/hari\n   ("+buildingInfo[7]+")")
+        print("I: Menara Tunai (32 lahan, $3000). Efek:\n   - +$500/hari\n   ("+buildingInfo[8]+")")
+        print("J: Monumen Kehidupan (64 lahan, 5000 bahan bangunan, $5000). Efek:\n   - Orang tidak lagi mati (kecuali orang yang mati sebagai korban)\n   ("+buildingInfo[9]+")")
         print("Kunci lainnya: batal")
         
         bdec = input()
