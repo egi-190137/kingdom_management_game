@@ -242,22 +242,10 @@ while not kingdom.endGame:
         kingdom.trainSoldier()
 
     elif dailydecision == "n":
-        if level >= 10:
-            if mortarprice > money:
-                print("Tidak cukup uang!\n\n")
-                points -= level*50
-            else:
-                playsound('sounds/clanks-89017.wav')
-                money -=mortarprice
-                mortars += 1
-                mortarprice += (15*mortars)
-                print("Berhasil diBuat!\n\n")
-                points += level*150
-        else:
-            print()
-            print()
+        kingdom.createMortar()
 
     elif dailydecision == "o":
+        
         if level >= 15:
             if missileprice > money:
                 print("Tidak cukup uang!\n\n")

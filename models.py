@@ -790,7 +790,8 @@ Bangunan:
             else:
                 print("Anda tidak memiliki Sihir ini!\n\n")
                 self.points -= self.level*50
-    
+
+
     def changeLaw(self):
         print("Hukum apa yang ingin Anda ubah?")
         print("A: Hukum kelahiran")
@@ -830,6 +831,7 @@ Bangunan:
                 self.prodMult = 1
 
             print("Berhasil diubah!")  
+
 
     def build(self):
         buildingList = [
@@ -1113,6 +1115,23 @@ Bangunan:
                 self.soldierPrice += (15*self.soldiers)
                 print("Berhasil diBuat!\n\n")
                 self.points += self.level*100
+        else:
+            print()
+            print()
+
+
+    def createMortar(self):        
+        if self.level >= 10:
+            if self.mortarPrice > self.money:
+                print("Tidak cukup uang!\n\n")
+                self.points -= self.level*50
+            else:
+                playsound('sounds/clanks-89017.wav')
+                self.money -= self.mortarPrice
+                self.mortars += 1
+                self.mortarPrice += (15*self.mortars)
+                print("Berhasil diBuat!\n\n")
+                self.points += self.level*150
         else:
             print()
             print()
