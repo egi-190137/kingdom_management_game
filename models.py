@@ -829,8 +829,7 @@ Bangunan:
                 self.consumpMult = 1
                 self.prodMult = 1
 
-            print("Berhasil diubah!")
-    
+            print("Berhasil diubah!")  
 
     def build(self):
         buildingList = [
@@ -1100,6 +1099,23 @@ Bangunan:
                 print("Anda sudah membangun gedung ini!\n\n")
         else:
             print("\n")
+
+
+    def trainSoldier(self):
+        if self.level >= 5:
+            if self.soldierPrice > self.money:                
+                print("Tidak cukup uang!\n\n")
+                self.points -= self.level*50
+            else:
+                playsound('sounds/clanks-89017.wav')
+                self.money -= self.soldierPrice
+                self.soldiers += 1
+                self.soldierPrice += (15*self.soldiers)
+                print("Berhasil diBuat!\n\n")
+                self.points += self.level*100
+        else:
+            print()
+            print()
 
 
 

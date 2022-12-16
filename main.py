@@ -239,20 +239,7 @@ while not kingdom.endGame:
         kingdom.build()
         
     elif dailydecision == "m":
-        if level >= 5:
-            if soldierprice > money:                
-                print("Tidak cukup uang!\n\n")
-                points -= level*50
-            else:
-                playsound('sounds/clanks-89017.wav')
-                money -= soldierprice
-                soldiers +=1
-                soldierprice += (15*soldiers)
-                print("Berhasil diBuat!\n\n")
-                points += level*100
-        else:
-            print()
-            print()
+        kingdom.trainSoldier()
 
     elif dailydecision == "n":
         if level >= 10:
