@@ -1130,6 +1130,25 @@ Bangunan:
             print()
             print()
         session.commit()
+    
+
+    def createBHBomb(self):
+        if self.level >= 30:
+            if self.bhbombPrice > self.money:
+                print("Tidak cukup uang!\n\n")
+                self.points -= self.level*50
+            else:
+                playsound('sounds/clanks-89017.wav')
+                self.money -= self.bhbombPrice
+                self.bhbombs += 1
+                self.bhbombPrice += (15*self.bhbombs)
+                print("Berhasil diBuat!\n\n")
+                self.points += self.level*150
+        else:
+            print()
+            print()
+        session.commit()
+
 
 
 Base.metadata.create_all(engine)
