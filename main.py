@@ -273,3 +273,5 @@ while not kingdom.endGame:
         print("Anda kalah.")
         time.sleep(2)
         kingdom.endGame = True
+        
+        session.commit()
