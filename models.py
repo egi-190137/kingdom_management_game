@@ -790,7 +790,7 @@ Bangunan:
             else:
                 print("Anda tidak memiliki Sihir ini!\n\n")
                 self.points -= self.level*50
-
+        session.commit()
 
     def changeLaw(self):
         print("Hukum apa yang ingin Anda ubah?")
@@ -829,8 +829,8 @@ Bangunan:
             else:
                 self.consumpMult = 1
                 self.prodMult = 1
-
             print("Berhasil diubah!")  
+        session.commit()
 
 
     def build(self):
@@ -1101,6 +1101,7 @@ Bangunan:
                 print("Anda sudah membangun gedung ini!\n\n")
         else:
             print("\n")
+        session.commit()
 
 
     def trainSoldier(self):
@@ -1118,6 +1119,7 @@ Bangunan:
         else:
             print()
             print()
+        session.commit()
 
 
     def createMortar(self):        
@@ -1135,6 +1137,7 @@ Bangunan:
         else:
             print()
             print()
+        session.commit()
 
 
 
