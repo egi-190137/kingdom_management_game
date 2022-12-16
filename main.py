@@ -263,8 +263,9 @@ while not kingdom.endGame:
     
     time.sleep(1)
     kingdom.day += 1
+    session.commit()
 
-    if pop<=0:
+    if kingdom.population <=0:
         print("Populasi Anda menjadi nol. Kerajaan Anda...")
         time.sleep(1)
         print("\n hancur.")

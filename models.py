@@ -1153,29 +1153,41 @@ Bangunan:
 
 Base.metadata.create_all(engine)
 
-# Harus dijalankan satu kali saja
-# session.add_all([
-#     Spell(name="Sihir Kemakmuran"),
-#     Spell(name="Sihir Kesuburan"),
-#     Spell(name="Sihir Kekayaan"),
-#     Spell(name="Sihir Kerja"),
-#     Spell(name="Sihir Pedang"),
-#     Spell(name="Sihir Perang"),
-#     Spell(name="Sihir Serangan"),
-#     Spell(name="Sihir Pertahanan"),
-#     Spell(name="Sihir Kehancuran"),
-#     Spell(name="Sihir Kebusukan"),
-#     Spell(name="Sihir Kematian"),
-#     Building(name="Monolit Batu"),
-#     Building(name="Orang-orangan Sawah"),
-#     Building(name="Patung Bayi"),
-#     Building(name="Patung Pembangun"),
-#     Building(name="Altar Pengorbanan"),
-#     Building(name="Bazaar"),
-#     Building(name="Kuil"),
-#     Building(name="Menara Bisnis"),
-#     Building(name="Menara Kas"),
-#     Building(name="Monumen Kehidupan"),
-# ])
+# Cek apakah tabel spell
+query = select(Spell)
+spells = [ spell for spell in session.scalar(query) ]
+
+if spells == []:
+    session.add_all([
+        Spell(name="Sihir Kemakmuran"),
+        Spell(name="Sihir Kesuburan"),
+        Spell(name="Sihir Kekayaan"),
+        Spell(name="Sihir Kerja"),
+        Spell(name="Sihir Pedang"),
+        Spell(name="Sihir Perang"),
+        Spell(name="Sihir Serangan"),
+        Spell(name="Sihir Pertahanan"),
+        Spell(name="Sihir Kehancuran"),
+        Spell(name="Sihir Kebusukan"),
+        Spell(name="Sihir Kematian")
+    ])
+
+# Cek apakah tabel building masih kosong
+query = select(Building)
+buildings = [ building for building in session.scalar(query) ]
+
+if buildings == []:
+    session.add_all([
+        Building(name="Monolit Batu"),
+        Building(name="Orang-orangan Sawah"),
+        Building(name="Patung Bayi"),
+        Building(name="Patung Pembangun"),
+        Building(name="Altar Pengorbanan"),
+        Building(name="Bazaar"),
+        Building(name="Kuil"),
+        Building(name="Menara Bisnis"),
+        Building(name="Menara Kas"),
+        Building(name="Monumen Kehidupan"),
+    ])
 
 session.commit()
