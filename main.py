@@ -4,7 +4,6 @@ import random
 
 from pygame import mixer 
 from playsound import playsound
-
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -245,21 +244,7 @@ while not kingdom.endGame:
         kingdom.createMortar()
 
     elif dailydecision == "o":
-        
-        if level >= 15:
-            if missileprice > money:
-                print("Tidak cukup uang!\n\n")
-                points -= level*50
-            else:
-                playsound('sounds/clanks-89017.wav')
-                money -= missileprice
-                missiles += 1
-                missileprice += (15*missiles)
-                print("Berhasil diBuat!\n\n")
-                points += level*150
-        else:
-            print()
-            print()
+        self.createMissile()
 
     elif dailydecision == "p":
         if level >= 20:
