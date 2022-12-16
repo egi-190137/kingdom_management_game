@@ -1114,6 +1114,24 @@ Bangunan:
         session.commit()
 
 
+    def createHBomb(self):
+        if self.level >= 25:
+            if self.hbombPrice > self.money:
+                print("Tidak cukup uang!\n\n")
+                self.points -= self.level*50
+            else:
+                playsound('sounds/clanks-89017.wav')
+                self.money -= self.hbombPrice
+                self.hbombs += 1
+                self.hbombPrice += (15*self.hbombs)
+                print("Berhasil diBuat!\n\n")
+                self.points += self.level*150
+        else:
+            print()
+            print()
+        session.commit()
+
+
 Base.metadata.create_all(engine)
 
 # Harus dijalankan satu kali saja

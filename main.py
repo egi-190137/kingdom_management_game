@@ -248,22 +248,9 @@ while not kingdom.endGame:
 
     elif dailydecision == "p":
         kingdom.createNuke()
-        
+
     elif dailydecision == "q":
-        if level >= 25:
-            if hbombprice > money:
-                print("Tidak cukup uang!\n\n")
-                points -= level*50
-            else:
-                playsound('sounds/clanks-89017.wav')
-                money -= hbombprice
-                hbombs += 1
-                hbombprice += (15*hbombs)
-                print("Berhasil diBuat!\n\n")
-                points += level*150
-        else:
-            print()
-            print()
+        kingdom.createHBomb()
 
     elif dailydecision == "r":
         if level >= 30:
