@@ -2,7 +2,7 @@ import time
 import playsound
 import random
 
-from sqlalchemy import Column, Table
+from sqlalchemy import Column
 from sqlalchemy import ForeignKey
 from sqlalchemy import Integer, String, Float, Boolean
 from sqlalchemy.orm import relationship
@@ -840,7 +840,6 @@ Bangunan:
             "Patung Bayi",
             "Patung Pembangun",
             "Altar Pengorbanan",
-            "Kedutaan",
             "Bazaar",
             "Kuil",
             "Menara Bisnis",
@@ -848,259 +847,198 @@ Bangunan:
             "Monumen Kehidupan",
         ]
 
-        
+        buildingInfo = [ ("Sudah dibangun" if self.checkBuildingExist(build) else "Belum dibangun") for build in buildingList ]
 
         print("Bangunan yang bisa Anda bangun:")
-        print("A: Batu Monolit (1 lahan, 60 bahan bangunan). Efek:\n   - +$5/hari\n   ("+builts[0]+")")
-        print("B: Orang-orangan sawah (1 lahan, 60 bahan bangunan). Efek:\n   - +100 makanan/hari\n   ("+builts[1]+")")
-        print("C: Patung Bayi (1 lahan, 120 bahan bangunan). Efek:\n   - +2 populasi/hari\n   ("+builts[2]+")")
-        print("D: Patung Pembangun (1 lahan, 200 bahan bangunan). Efek:\n   - +20 bahan bangunan/hari\n   ("+builts[3]+")")
-        print("E: Altar Pengorbanan (2 lahan, 350 bahan bangunan, 20 populasi). Efek:\n   - +2 kematian/hari\n   - +1000 makanan/hari\n   ("+builts[4]+")")
-        print("F: Kedutaan (4 lahan, 500 bahan bangunan, $300) (mungkin tidak boleh dibangun jika skor hubungan Anda 5). Efek:\n   - +2 hubungan dengan "+name+" (maksimum)\n   ("+builts[5]+")")
-        print("G: Bazaar (8 lahan, 700 bahan bangunan, $500). Efek:\n   - +$70/hari\n   - +75 bahan bangunan/hari\n   ("+builts[6]+")")
-        print("H: Kuil (16 lahan, 1000 bahan bangunan, $1000). Efek:\n   - +50 populasi/hari\n   - +$100/hari\n   - +100 bahan bangunan/hari\n   ("+builts[7]+")")
-        print("I: Menara Bisnis (32 lahan, 3000 bahan bangunan). Efek:\n   - +500 bahan bangunan/hari\n   ("+builts[8]+")")
-        print("J: Menara Tunai (32 lahan, $3000). Efek:\n   - +$500/hari\n   ("+builts[9]+")")
-        print("K: Monumen Kehidupan (64 lahan, 5000 bahan bangunan, $5000). Efek:\n   - Orang tidak lagi mati (kecuali orang yang mati sebagai korban)\n   ("+builts[10]+")")
+        print("A: Batu Monolit (1 lahan, 60 bahan bangunan). Efek:\n   - +$5/hari\n   ("+buildingInfo[0]+")")
+        print("B: Orang-orangan sawah (1 lahan, 60 bahan bangunan). Efek:\n   - +100 makanan/hari\n   ("+buildingInfo[1]+")")
+        print("C: Patung Bayi (1 lahan, 120 bahan bangunan). Efek:\n   - +2 populasi/hari\n   ("+buildingInfo[2]+")")
+        print("D: Patung Pembangun (1 lahan, 200 bahan bangunan). Efek:\n   - +20 bahan bangunan/hari\n   ("+buildingInfo[3]+")")
+        print("E: Altar Pengorbanan (2 lahan, 350 bahan bangunan, 20 populasi). Efek:\n   - +2 kematian/hari\n   - +1000 makanan/hari\n   ("+buildingInfo[4]+")")
+        print("F: Bazaar (8 lahan, 700 bahan bangunan, $500). Efek:\n   - +$70/hari\n   - +75 bahan bangunan/hari\n   ("+buildingInfo[6]+")")
+        print("G: Kuil (16 lahan, 1000 bahan bangunan, $1000). Efek:\n   - +50 populasi/hari\n   - +$100/hari\n   - +100 bahan bangunan/hari\n   ("+buildingInfo[7]+")")
+        print("H: Menara Bisnis (32 lahan, 3000 bahan bangunan). Efek:\n   - +500 bahan bangunan/hari\n   ("+buildingInfo[8]+")")
+        print("I: Menara Tunai (32 lahan, $3000). Efek:\n   - +$500/hari\n   ("+buildingInfo[9]+")")
+        print("J: Monumen Kehidupan (64 lahan, 5000 bahan bangunan, $5000). Efek:\n   - Orang tidak lagi mati (kecuali orang yang mati sebagai korban)\n   ("+buildingInfo[10]+")")
         print("Kunci lainnya: batal")
         
-        bdec = str(input())
+        bdec = input()
         bdec = bdec.lower()
-        if bdec=="a":
-            if builts[0] == "Belum dibangun":
-                if land >= 1:
-                    if buildmaterials >= 60:
-                        playsound('sounds/C:\tmp\wrryyy\palu.wav')
-                        land -= 1
-                        buildmaterials -= 60
-                        moneypro += 5
-                        builts[0] = "Dibangun"
+
+        idx = "abcdefghij".index(bdec)
+        if buildingInfo[idx] == "Sudah dibangun":
+            print("Anda sudah membangun gedung ini!\n\n")
+        else:
+            if idx == 0:
+                if self.land >= 1:
+                    if self.buildMaterials >= 60:
+                        playsound('sounds/palu.wav')
+                        self.land -= 1
+                        self.buildMaterials -= 60
+                        self.moneyPro += 5
                         print("Berhasil membangun Monolit Batu!\n\n")
-                        buildingsL.append("Monolit Batu")
-                        points += level*110
+                        self.addBuilding("Monolit Batu")
+                        self.points += self.level*110
                     else:
                         print("Bahan bangunan tidak cukup!\n\n")
-                        points -= level*50
+                        self.points -= self.level*50
                 else:
                     print("Tidak cukup lahan!\n\n")
-                    points -= level*50
-            else:
-                print("Anda sudah membangun gedung ini!\n\n")
-        elif bdec == "b":
-            if builts[1] == "Belum dibangun":
-                if land >= 1:
-                    if buildmaterials >= 60:
+                    self.points -= self.level*50
+            elif idx == 1:
+                if self.land >= 1:
+                    if self.buildMaterials >= 60:
                         playsound('sounds/palu.wav')
-                        land -= 1
-                        buildmaterials = buildmaterials-60
-                        foodpro += 100
-                        builts[1]="Dibangun"
+                        self.land -= 1
+                        self.buildMaterials -= 60
+                        self.foodPro += 100
                         print("Berhasil membangun Orang-orangan Sawah!\n\n")
-                        buildingsL.append("Orang-orangan Sawah")
-                        points += level*110
+                        self.addBuilding("Orang-orangan Sawah")
+                        self.points += self.level*110
                     else:
                         print("Bahan bangunan tidak cukup!\n\n")
-                        points -=level*50
+                        self.points -= self.level*50
                 else:
                     print("Tidak cukup lahan!\n\n")
-                    points -= level*50
-            else:
-                print("Anda sudah membangun gedung ini!\n\n")
-        elif bdec == "c":
-            if builts[2] == "Belum dibangun":
-                if land >= 1:
-                    if buildmaterials >= 120:
+                    self.points -= self.level*50
+            elif idx == 2:
+                if self.land >= 1:
+                    if self.buildMaterials >= 120:
                         playsound('sounds/palu.wav')
-                        land -= 1
-                        buildmaterials -= 120
-                        popadd += 2
-                        builts[2] = "Dibangun"
+                        self.land -= 1
+                        self.buildMaterials -= 120
+                        self.popAdd += 2
                         print("Berhasil membuat Patung Bayi!\n\n")
-                        buildingsL.append("Patung Bayi")
-                        points += level*130
+                        self.addBuilding("Patung Bayi")
+                        self.points += self.level*130
                     else:
                         print("Bahan bangunan tidak cukup!\n\n")
-                        points -= level*50
+                        self.points -= self.level*50
                 else:
                     print("Tidak cukup lahan!\n\n")
-                    points -= level*50
-            else:
-                print("Anda sudah membangun gedung ini!\n\n")
-        elif bdec == "d":
-            if builts[3] == "Belum dibangun":
-                if land >= 1:
-                    if buildmaterials >= 200:
+                    self.points -= self.level*50
+            elif idx == 3:
+                if self.land >= 1:
+                    if self.buildMaterials >= 200:
                         playsound('sounds/palu.wav')
-                        land -= 1
-                        buildmaterials -= 200
-                        buildmaterialspro += 20
-                        builts[3] = "Dibangun"
+                        self.land -= 1
+                        self.buildMaterials -= 200
+                        self.buildMaterialsPro += 20
                         print("Berhasil membangun Patung Pembangun!\n\n")
-                        buildingsL.append("Patung Pembangun")
-                        points += level*150
+                        self.addBuilding("Patung Pembangun")
+                        self.points += self.level*150
                     else:
                         print("Bahan bangunan tidak cukup!\n\n")
-                        points -= level*50
+                        self.points -= self.level*50
                 else:
                     print("Tidak cukup lahan!\n\n")
-                    points -= level*50
-            else:
-                print("Anda sudah membangun gedung ini!\n\n")
-        elif bdec == "e":
-            if builts[4] == "Belum dibangun":
-                if land >= 2:
-                    if buildmaterials >= 350 and pop>=20:
+                    self.points -= self.level*50
+            elif idx == 4:
+                if self.land >= 2:
+                    if self.buildMaterials >= 350 and self.population >= 20:
                         playsound('sounds/palu.wav')
-                        land -= 2
-                        buildmaterials -= 350
-                        pop -= 20
-                        foodpro += 1000
-                        deathadd += 2
-                        builts[4] = "Dibangun"
+                        self.land -= 2
+                        self.buildMaterials -= 350
+                        self.population -= 20
+                        self.foodPro += 1000
+                        self.deathAdd += 2
                         print("Berhasil membangun Altar Pengorbanan, mengorbankan 20 orang tak berdosa dalam prosesnya!\n\n")
-                        buildingsL.append("Altar Pengorbanan")
-                        points += level*160
+                        self.addBuilding("Altar Pengorbanan")
+                        self.points += self.level*160
                     else:
                         print("Tidak cukup bahan bangunan/populasi!\n\n")
-                        points -= level*50
+                        self.points -= self.level*50
                 else:
                     print("Tidak cukup lahan!\n\n")
-                    points -= level*50
-            else:
-                print("Anda sudah membangun gedung ini!\n\n")
-        elif bdec == "f":
-            if builts[5] == "Belum dibangun":
-                if land >= 4:
-                    if buildmaterials >= 500 and money >= 300:
+                    self.points -= self.level*50
+            elif idx == 5:            
+                if self.land >= 8:
+                    if self.buildMaterials >= 700 and self.money >= 500:
                         playsound('sounds/palu.wav')
-                        land -= 4
-                        buildmaterials -= 500
-                        money -= 300
-                        if relationship<=3:
-                            relationship += 2
-                        elif relationship==4:
-                            relationship += 1
-                        
-                        builts[5]="Dibangun"
-                        print("Berhasil membangun Kedutaan!\n\n")
-                        buildingsL.append("Kedutaan")
-                        points += level*180
-                    else:
-                        print("Bahan bangunan/uang tidak cukup!\n\n")
-                        points -= level*50
-                else:
-                    print("Tidak cukup lahan!\n\n")
-                    points -= level*50
-            else:
-                print("Anda sudah membangun gedung ini!\n\n")
-        elif bdec == "g":
-            if builts[6] == "Belum dibangun":
-                if land >= 8:
-                    if buildmaterials >= 700 and money >= 500:
-                        playsound('sounds/palu.wav')
-                        land -= 8
-                        buildmaterials -= 700
-                        money -= 500
-                        moneypro += 70
-                        buildmaterialspro += 75
-                        builts[6] = "Dibangun"
+                        self.land -= 8
+                        self.buildMaterials -= 700
+                        self.money -= 500
+                        self.moneyPro += 70
+                        self.buildMaterialsPro += 75
                         print("Berhasil membangun Bazaar!\n\n")
-                        buildingsL.append("Bazaar")
-                        points += level*190
+                        self.addBuilding("Bazaar")
+                        self.points += self.level*190
                     else:
                         print("Bahan bangunan/uang tidak cukup!\n\n")
-                        points -= level*50
+                        self.points -= self.level*50
                 else:
                     print("Tidak cukup lahan!\n\n")
-                    points -= level*50
-            else:
-                print("Anda sudah membangun gedung ini!\n\n")
-        elif bdec == "h":
-            if builts[7] == "Belum dibangun":
-                if land >= 16:
-                    if buildmaterials >= 1000 and money >= 1000:
+                    self.points -= self.level*50
+            elif idx == 6:
+                if self.land >= 16:
+                    if self.buildMaterials >= 1000 and self.money >= 1000:
                         playsound('sounds/palu.wav')
-                        land -= 16
-                        buildmaterials -= 1000
-                        money -= 1000
-                        moneypro += 100
-                        buildmaterialspro += 100
-                        popadd += 50
-                        builts[7] = "Dibangun"
+                        self.land -= 16
+                        self.buildMaterials -= 1000
+                        self.money -= 1000
+                        self.moneyPro += 100
+                        self.buildMaterialsPro += 100
+                        self.popAdd += 50
                         print("Berhasil membangun Kuil!\n\n")
-                        buildingsL.append("Kuil")
-                        points += level*200
+                        self.addBuilding("Kuil")
+                        self.points += self.level*200
                     else:
                         print("Bahan bangunan/uang tidak cukup!\n\n")
-                        points -= level*50
+                        self.points -= self.level*50
                 else:
                     print("Tidak cukup lahan!\n\n")
-                    points -= level*50
-            else:
-                print("Anda sudah membangun gedung ini!\n\n")
-        elif bdec == "i":
-            if builts[8] == "Belum dibangun":
-                if land >= 32:
-                    if buildmaterials >= 3000:
+                    self.points -= self.level*50
+            elif idx == 7:
+                if self.land >= 32:
+                    if self.buildMaterials >= 3000:
                         playsound('sounds/palu.wav')
-                        land -= 32
-                        buildmaterials -= 3000
-                        buildmaterialspro += 500
-                        builts[8] = "Dibangun"
+                        self.land -= 32
+                        self.buildMaterials -= 3000
+                        self.buildMaterialsPro += 500
                         print("Berhasil membangun Menara Bisnis!\n\n")
-                        buildingsL.append("Menara Bisnis")
-                        points += level*230
+                        self.addBuilding("Menara Bisnis")
+                        self.points += self.level*230
                     else:
                         print("Bahan bangunan tidak cukup!\n\n")
-                        points -= level*50
+                        self.points -= self.level*50
                 else:
                     print("Tidak cukup lahan!\n\n")
-                    points -= level*50
-            else:
-                print("Anda sudah membangun gedung ini!\n\n")
-        elif bdec == "j":
-            if builts[9] == "Belum dibangun":
-                if land >= 32:
-                    if money >= 3000:
+                    self.points -= self.level*50
+            elif idx == 8:
+                if self.land >= 32:
+                    if self.money >= 3000:
                         playsound('sounds/palu.wav')
-                        land -= 32
-                        money -=3000
-                        moneypro += 500
-                        builts[9] = "Dibangun"
+                        self.land -= 32
+                        self.money -=3000
+                        self.moneyPro += 500
                         print("Berhasil membangun Menara Kas!\n\n")
-                        buildingsL.append("Menara Kas")
-                        points += level*230
+                        self.addBuilding("Menara Kas")
+                        self.points += self.level*230
                     else:
                         print("Tidak cukup uang!\n\n")
-                        points -= level*50
+                        self.points -= self.level*50
                 else:
                     print("Tidak cukup lahan!\n\n")
-                    points -= level*50
-            else:
-                print("Anda sudah membangun gedung ini!\n\n")
-        elif bdec == "k":
-            if builts[10] == "Belum dibangun":
-                if land >= 64:
-                    if buildmaterials >= 5000 and money >= 5000:
+                    self.points -= self.level*50
+            elif idx == 9:
+                if self.land >= 64:
+                    if self.buildMaterials >= 5000 and self.money >= 5000:
                         playsound('sounds/palu.wav')
-                        land -= 64
-                        buildmaterials -=5000
-                        money -= 5000
-                        deathcan = False
-                        builts[10] = "Dibangun"
+                        self.land -= 64
+                        self.buildMaterials -=5000
+                        self.money -= 5000
+                        self.deathCan = False
                         print("Berhasil membangun Monumen Kehidupan! Orang tidak lagi mati, kecuali pengorbanan.\n\n")
-                        buildingsL.append("Monumen Kehidupan")
-                        points += level*260
+                        self.addBuilding("Monumen Kehidupan")
+                        self.points += self.level*260
                     else:
                         print("Bahan bangunan/uang tidak cukup!\n\n")
-                        points -= level*50
+                        self.points -= self.level*50
                 else:
                     print("Tidak cukup lahan!\n\n")
-                    points -= level*50
+                    self.points -= self.level*50
             else:
-                print("Anda sudah membangun gedung ini!\n\n")
-        else:
-            print("\n")
+                print("\n")
         session.commit()
 
 
@@ -1161,7 +1099,6 @@ Base.metadata.create_all(engine)
 #     Building(name="Patung Bayi"),
 #     Building(name="Patung Pembangun"),
 #     Building(name="Altar Pengorbanan"),
-#     Building(name="Kedutaan"),
 #     Building(name="Bazaar"),
 #     Building(name="Kuil"),
 #     Building(name="Menara Bisnis"),
