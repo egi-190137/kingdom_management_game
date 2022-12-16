@@ -1077,6 +1077,7 @@ Bangunan:
             print()
         session.commit()
 
+
     def createMissile(self):
         if self.level >= 15:
             if self.missilePrice > self.money:
@@ -1087,6 +1088,24 @@ Bangunan:
                 self.money -= self.missilePrice
                 self.missiles += 1
                 self.missilePrice += (15*self.missiles)
+                print("Berhasil diBuat!\n\n")
+                self.points += self.level*150
+        else:
+            print()
+            print()
+        session.commit()
+
+
+    def createNuke(self):
+        if self.level >= 20:
+            if self.nukePrice > self.money:
+                print("Tidak cukup uang!\n\n")
+                self.points -= self.level*50
+            else:
+                playsound('sounds/clanks-89017.wav')
+                self.money -= self.nukePrice
+                self.nukes += 1
+                self.nukePrice += (15*self.nukes)
                 print("Berhasil diBuat!\n\n")
                 self.points += self.level*150
         else:
