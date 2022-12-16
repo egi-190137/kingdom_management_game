@@ -1155,7 +1155,8 @@ Base.metadata.create_all(engine)
 
 # Cek apakah tabel spell
 query = select(Spell)
-spells = [ spell for spell in session.scalar(query) ]
+result = session.scalars(query).all()
+spells = [ data for data in result ]
 
 if spells == []:
     session.add_all([
@@ -1174,7 +1175,8 @@ if spells == []:
 
 # Cek apakah tabel building masih kosong
 query = select(Building)
-buildings = [ building for building in session.scalar(query) ]
+result = session.scalars(query)
+buildings = [ data for data in result ]
 
 if buildings == []:
     session.add_all([
