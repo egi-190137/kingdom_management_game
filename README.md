@@ -10,7 +10,7 @@
 pip install -r requirements.txt
 ```
 
-3. Jalankan code main.py di terminal/CMD
+4. Jalankan code main.py di terminal/CMD
 ```
 python main.py
 ```
