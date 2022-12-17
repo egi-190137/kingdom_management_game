@@ -272,7 +272,7 @@ while not kingdom.endGame:
     if kingdom.population <=0:
         print("Populasi Anda menjadi nol. Kerajaan Anda...")
         time.sleep(1)
-        print("\n hancur.")
+        print("\n HANCUR.")
         time.sleep(0.5)
         print("Anda kalah.")
         time.sleep(2)
