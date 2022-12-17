@@ -126,7 +126,7 @@ class Kingdom(Base):
     explorePrice = Column(Integer, default=10)
     land = Column(Integer, default=1)
 
-    money = Column(Integer, default=50)    
+    money = Column(Integer, default=60)    
     moneyPro = Column(Integer, default=1)
     moneyProLevel = Column(Integer, default=1)
     moneyProUpgradePrice = Column(Integer, default=10)
