@@ -31,12 +31,13 @@ if pilih == 1:
             (Player.password==password)
         )
         result = session.execute(query)
-        player = result.fetchone()[0]
+        player = result.fetchone()
         
         if player == None:
             print("\n\nUsername atau password salah!!!\n\n")
         else:
             print("\n\nAnda berhasil login")
+            player = player[0]
             break
     
     kingdom = player.kingdom
@@ -218,38 +219,44 @@ while not kingdom.endGame:
         kingdom.war()
 
     elif dailydecision == "g":
-        kingdom.exploreLand()
+        kingdom.showAttackLog()
+
+    elif dailydecision == "h":
+        kingdom.showAttackedLog()
 
     elif dailydecision == "i":
-        kingdom.randomEvent()
+        kingdom.exploreLand()
 
     elif dailydecision == "j":
-        kingdom.useSpell()
+        kingdom.randomEvent()
 
     elif dailydecision == "k":
-        kingdom.changeLaw()
+        kingdom.useSpell()
 
     elif dailydecision == "l":
-        kingdom.build()
+        kingdom.changeLaw()
         
     elif dailydecision == "m":
-        kingdom.trainSoldier()
+        kingdom.build()
 
     elif dailydecision == "n":
-        kingdom.createMortar()
+        kingdom.trainSoldier()
 
     elif dailydecision == "o":
-        kingdom.createMissile()
+        kingdom.createMortar()
 
     elif dailydecision == "p":
-        kingdom.createNuke()
+        kingdom.createMissile()
 
     elif dailydecision == "q":
-        kingdom.createHBomb()
+        kingdom.createNuke()
 
     elif dailydecision == "r":
-        kingdom.createBHBomb()
+        kingdom.createHBomb()
     
+    elif dailydecision == "s":
+        kingdom.createBHBomb()
+
     elif dailydecision == "x":
         player.is_online = 0
         session.commit()

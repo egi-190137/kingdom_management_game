@@ -13,7 +13,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 
-engine = create_engine("mysql+pymysql://root:@localhost/clash_of_clans", echo=True)
+engine = create_engine("mysql+pymysql://root:@localhost/clash_of_clans", echo=False)
 
 Base = declarative_base()
 
@@ -28,6 +28,9 @@ class Player(Base):
     is_online = Column(Boolean)
 
     kingdom = relationship("Kingdom", back_populates="ruler", uselist=False)
+
+    def __str__(self):
+        return self.username
 
 
 class KingdomSpellRelation(Base):
@@ -72,6 +75,37 @@ class Building(Base):
 
     def __str__(self):
         return self.name
+
+
+class WarLog(Base):
+    __tablename__ = "war_log"
+
+    id = Column(Integer, primary_key=True)
+    
+    id_penyerang = Column(ForeignKey("kingdom.id"), primary_key=True)
+    id_musuh = Column(ForeignKey("kingdom.id"), primary_key=True)
+
+    warPoints = Column(Integer, default=0)
+    enemyWarPoints = Column(Integer, default=0) 
+    buildAdd = Column(Integer, default=0)
+    landAdd = Column(Integer, default=0)
+    foodAdd = Column(Integer, default=0)
+    popDeath = Column(Integer, default=0)
+    enemyPopDeath = Column(Integer, default=0)
+    pointsAdd = Column(Integer, default=0)
+
+    def getNamaPenyerang(self):
+        query = select(Kingdom.name).where(Kingdom.id == self.id_penyerang)
+        result = session.execute(query)
+        kingdom = result.fetchone()[0]
+        return kingdom.name
+    
+    def getNamaMusuh(self):
+        query = select(Kingdom.name).where(Kingdom.id == self.id_musuh)
+        result = session.execute(query)
+        kingdom = result.fetchone()[0]
+        return kingdom.name
+
 
 
 class Kingdom(Base):
@@ -167,6 +201,9 @@ class Kingdom(Base):
 
     building_relations = relationship("KingdomBuildingRelation", back_populates="kingdom")
 
+    # menyerang = relationship("WarLog", back_populates="penyerang")
+    # diserang = relationship("WarLog", back_populates="musuh")
+
 
     def getAllSpells(self):
         return [ spell_relation.spell for spell_relation in self.spell_rellations ]
@@ -177,8 +214,8 @@ class Kingdom(Base):
 
 
     def __str__(self):
-        spell_list = "\n".join([f"- {spell.name}" for spell in self.getAllSpells()])
-        building_list = "\n".join([f"- {building.name}" for building in self.getAllBuildings()])
+        spell_list = "\n".join([f"- {spell}" for spell in self.getAllSpells()])
+        building_list = "\n".join([f"- {building}" for building in self.getAllBuildings()])
         
         kingdom_info = f"""\nHari {self.day:,} : 
 {self.age}
@@ -257,26 +294,28 @@ Populasi: {self.population:,}
         print("D: Tingkatkan produksi makanan seharga ${:,} (level saat ini: {:,}".format(self.foodProUpgradePrice, self.foodProLevel))
         print("E: Coba berdagang")
         print("F: Nyatakan perang")
-        print("G: Jelajahi lahan baru seharga ${:,}".format(self.explorePrice))
-        print("H/kunci lainnya: Hari berikutnya")
-        print("I: Kejadian Random")
-        print("J: Mengeluarkan Sihir")
-        print("K: Mengatur hukum lahan")
-        print("L: Membangun sesuatu")
+        print("G: Log serangan")
+        print("H: Log diserang")
+        print("I: Jelajahi lahan baru seharga ${:,}".format(self.explorePrice))
+        print("J: Kejadian Random")
+        print("K: Mengeluarkan Sihir")
+        print("L: Mengatur hukum lahan")
+        print("M: Membangun sesuatu")
         
         if self.level>=5:
-            print("M: Latih Prajurit seharga ${:,} (saat ini Anda memiliki {:,})".format(self.soldierPrice, self.soldiers))
+            print("N: Latih Prajurit seharga ${:,} (saat ini Anda memiliki {:,})".format(self.soldierPrice, self.soldiers))
         if self.level>=10:
-            print("N: Buat Mortir seharga ${:,} (saat ini Anda memiliki {:,})".format(self.mortarPrice, self.mortars))
+            print("O: Buat Mortir seharga ${:,} (saat ini Anda memiliki {:,})".format(self.mortarPrice, self.mortars))
         if self.level>=15:
-            print("O: Buat Rudal seharga ${:,} (saat ini Anda memiliki {:,})".format(self.missilePrice, self.missiles))
+            print("P: Buat Rudal seharga ${:,} (saat ini Anda memiliki {:,})".format(self.missilePrice, self.missiles))
         if self.level>=20:
-            print("P: Buat Nuklir seharga ${:,} (saat ini Anda memiliki {:,})".format(self.nukePrice, self.nukes))
+            print("Q: Buat Nuklir seharga ${:,} (saat ini Anda memiliki {:,})".format(self.nukePrice, self.nukes))
         if self.level>=25:
-            print("Q: Buat Bom H seharga ${:,} (saat ini Anda memiliki {:,})".format(self.hbombPrice, self.hbombs))
+            print("R: Buat Bom H seharga ${:,} (saat ini Anda memiliki {:,})".format(self.hbombPrice, self.hbombs))
         if self.level>=30:
-            print("R: Buat Bom Lubang Hitam seharga ${:,} (saat ini Anda memiliki {:,})".format(self.bhbombPrice, self.bhbombs))
+            print("S: Buat Bom Lubang Hitam seharga ${:,} (saat ini Anda memiliki {:,})".format(self.bhbombPrice, self.bhbombs))
         
+        print("Y/kunci lainnya: Hari berikutnya")
         print("\nX: Exit")
 
 
@@ -327,15 +366,15 @@ Populasi: {self.population:,}
 
 
     def consumeFood(self):
-        self.consumption = int(self.consumpMult*self.population)
-        if self.food < self.consumption:
-            starved = int((self.consumption-self.food)/self.consumpMult)
+        consumption = int(self.consumpMult*self.population)
+        if self.food < consumption:
+            starved = int((consumption-self.food)/self.consumpMult)
             self.population -= starved
             self.food = 0
             print("Anda tidak memiliki cukup makanan, jadi {} orang meninggal karena kelaparan.".format(starved))
             time.sleep(1)
         else:
-            self.food = int(self.food-self.consumption)
+            self.food = int(self.food-consumption)
         session.commit()
 
 
@@ -437,6 +476,15 @@ Populasi: {self.population:,}
             print("Anda berhasil melakukan perdagangan seharga ${:,}!\n\n".format(tradenum))
             self.points += self.level*100
         session.commit()
+    
+
+    def showAttackLog(self, num):
+        query = select(WarLog).where(WarLog.id_penyerang == self.id).order_by(WarLog.id_penyerang.desc()).limit(num)
+        result = session.scalars(query)
+        logs = [ data for data in result ]
+
+        for log in logs:
+            print(log)
 
 
     def war(self):
@@ -467,71 +515,107 @@ Populasi: {self.population:,}
             + (100*self.hbombs)
             + (200*self.bhbombs)))
         
-        if warPoints > enemyWarPoints:
-            playsound('sounds/success-fanfare-trumpets-6185.wav')
-            winBy = warPoints - enemyWarPoints
-            print("\n\nKamu menang! Kamu menjarah kota mereka dan mendapatkan banyak item:")
-            
-            moneyAdd    = int(0.5*winBy)
-            buildAdd    = int(0.5*winBy)+11
-            landAdd     = int((0.5*winBy))
-            foodAdd     = int((0.5*winBy))+50
-            popDeath    = int(0.1*self.population)
-            
-            enemy.population        -= int(0.5*enemy.population)
-            self.money              += moneyAdd
-            self.buildMaterials     += buildAdd
-            self.land               += landAdd
-            self.food               += foodAdd
-            self.points             += self.level*100
-            self.population         -= popDeath
-            
-            print("- ${:,}".format(moneyAdd))
-            print("- {:,} bahan bangunan".format(buildAdd))
-            print("- {:,} lahan baru".format(landAdd))
-            print("- {:,} lebih banyak makanan\n".format(foodAdd))
-            print("Namun, Anda telah kehilangan {:,} orang-orang dalam perang.\n\n".format(popDeath))
-            time.sleep(2)
-        elif warPoints < enemyWarPoints:
-            playsound('sounds/piano-crash-sound-37898.wav')
-            loseBy = enemyWarPoints-warPoints
-            print("\n\nKamu kalah. Mereka menjarah kotamu dan mendapatkan banyak item:")
-            
-            moneySubtract   = int(0.5*loseBy)
-            buildSubtract   = int(0.5*loseBy)
-            landSubtract    = int(0.5*self.land)
-            foodSubtract    = int(0.5*loseBy)
-            
-            self.food -= foodSubtract
-            if self.food < 0:
-                foodSubtract += self.food
-                self.food = 0
-            
-            self.land -= landSubtract
-            enemy.population -= (0.1*enemy.population)
-            self.population = int(0.5*self.population)
-            self.money -= moneySubtract
-            if self.money < 0:
-                moneySubtract += self.money
-                self.money = 0
-            
-            self.buildMaterials -= buildSubtract
-            if self.buildMaterials < 0:
-                buildSubtract += self.buildMaterials
-                self.buildMaterials = 0
-            
-            self.points -= (self.level*100)
-
-            print("- ${:,}".format(moneySubtract))
-            print("- {:,} bahan bangunan".format(buildSubtract))
-            print("- {:,} lahan".format(landSubtract))
-            print("- {:,} makanan\n".format(foodSubtract))
-            print("Anda juga telah kehilangan {:,} orang dalam perang.".format(int(0.5*self.population)))
-            time.sleep(2)
-        else:
+        if warPoints == enemyWarPoints:
             print("Kalian seri. Tidak ada di antara kalian yang kehilangan apapun.")
             time.sleep(1)
-        
+
+            log = WarLog(id_penyerang=self.id, id_musuh=enemy.id)
+            
+            session.add(log)
+
+        else:
+            winBy = warPoints - enemyWarPoints
+            if winBy > 0: # jika menang
+                playsound('sounds/success-fanfare-trumpets-6185.wav')
+                print("\n\nKamu menang! Kamu menjarah kota mereka dan mendapatkan banyak item:")
+                buildAdd    = int(0.5*winBy)+11
+                landAdd     = int(0.5*winBy)
+                foodAdd     = int(0.5*winBy)+50
+                popDeath    = int(0.1*self.population)
+                enemyPopDeath = int(0.5*enemy.population)
+                pointsAdd = self.level*100
+
+            else:
+                playsound('sounds/piano-crash-sound-37898.wav')
+                print("\n\nKamu kalah. Mereka menjarah kotamu dan mendapatkan banyak item:")
+                buildAdd = int(0.5*winBy)
+                landAdd = int(0.5*self.land)
+                foodAdd = int(0.5*winBy)
+                popDeath = int(0.5*self.population)
+                enemyPopDeath = int(0.1*enemy.population)
+                pointsAdd = (self.level*100)
+
+
+            moneyAdd    = int(0.5*winBy)
+            
+            self.money += moneyAdd
+            if self.money < 0:
+                moneyAdd -= self.money
+                self.money = 0
+            
+            enemy.money -= moneyAdd
+            if enemy.money < 0:
+                moneyAdd += enemy.money
+                enemy.money = 0
+            
+            self.buildMaterials += buildAdd
+            if self.buildMaterials < 0:
+                buildAdd -= self.buildMaterials
+                self.buildMaterials = 0
+
+            enemy.buildMaterials -= buildAdd
+            if enemy.buildMaterials < 0:
+                buildAdd += enemy.buildMaterials
+                enemy.buildMaterials = 0
+
+            self.land += landAdd
+            enemy.land -= landAdd
+            
+            self.food += foodAdd
+            if self.food < 0:
+                foodAdd -= self.food
+                self.food = 0
+
+            enemy.food -= foodAdd
+            if enemy.food < 0:
+                foodAdd += enemy.food
+                enemy.food = 0
+
+            self.population -= popDeath
+            enemy.population -= enemyPopDeath
+
+            self.points += pointsAdd
+            if self.points < 0:
+                self.level -= 1
+                self.points = 0
+
+            enemy.points -= pointsAdd
+            if enemy.points < 0:
+                enemy.level -= 1
+                enemy.points = 0
+
+            print("- ${:,}".format(abs(moneyAdd)))
+            print("- {:,} bahan bangunan".format(abs(buildAdd)))
+            print("- {:,} lahan".format(abs(landAdd)))
+            print("- {:,} makanan\n".format(abs(foodAdd)))
+            print("- {:,} points\n".format(abs(pointsAdd)))
+            print("Anda telah kehilangan {:,} orang-orang dalam perang.\n\n".format(popDeath))
+            time.sleep(2)
+
+            log = WarLog(
+                id_penyerang=self.id, 
+                id_musuh=enemy.id,
+                warPoints=warPoints,
+                enemyWarPoints=enemyWarPoints,
+                buildAdd=buildAdd,   
+                landAdd=landAdd,
+                foodAdd=foodAdd,
+                popDeath=popDeath,
+                enemyPopDeath=enemyPopDeath,
+                pointsAdd=pointsAdd
+            )
+
+            session.add(log)
         session.commit()
 
 
@@ -669,7 +753,7 @@ Populasi: {self.population:,}
     def useSpell(self):
         print("Berikut adalah Sihir yang Anda miliki:")
         
-        mySpellName = [ spell.name for spell in self.getAllSpells() ]
+        mySpellName = [ spell  for spell in self.getAllSpells() ]
         for spell in list(set(mySpellName)):
             print("- {}".format(spell))
         
@@ -1162,7 +1246,7 @@ Base.metadata.create_all(engine)
 
 # Cek apakah tabel spell
 query = select(Spell)
-result = session.scalars(query).all()
+result = session.scalars(query)
 spells = [ data for data in result ]
 
 if spells == []:
