@@ -582,7 +582,7 @@ Musuh anda telah kehilangan {log.popDeath:,} orang-orang dalam perang.\n\n
     def war(self):
         # Cari musuh secara random
         query = select(Kingdom, Player).join(Kingdom.ruler).where(
-            (Kingdom.id != 3) & (Player.is_online == 0))
+            (Kingdom.id != self.id) & (Player.is_online == 0))
         
         result = session.scalars(query)
         enemies = [ data for data in result ]
