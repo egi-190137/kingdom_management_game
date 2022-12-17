@@ -486,6 +486,8 @@ Populasi: {self.population:,}
         query = select(WarLog).where(WarLog.id_penyerang == self.id).order_by(WarLog.id_penyerang.desc()).limit(num)
         result = session.scalars(query)
         logs = [ data for data in result ]
+        
+        print("=====LOG MENYERANG=====")
 
         if logs == []:
             print("\nAnda belum melakukan serangan\n")
@@ -523,6 +525,54 @@ Anda telah kehilangan {log.popDeath:,} orang-orang dalam perang.\n\n
 - {abs(log.foodAdd):,} makanan
 - {abs(log.pointsAdd):,} points
 Musuh anda telah kehilangan {log.enemyPopDeath:,} orang-orang dalam perang.\n\n
+
+
+"""
+                print(logText)
+
+
+    def showAttackedLog(self, num):
+        query = select(WarLog).where(WarLog.id_musuh == self.id).order_by(WarLog.id_penyerang.desc()).limit(num)
+        result = session.scalars(query)
+        logs = [ data for data in result ]
+
+        print("=====LOG DISERANG=====")
+        if logs == []:
+            print("\nAnda belum melakukan serangan\n")
+
+        for log in logs:
+            menangKalah = log.menangKalah(status="diserang")
+            logText = f"""Kerajaan musuh : {log.getNamaPenyerang()}
+Hasil pertandingan :
+===={menangKalah}====
+"""
+            if menangKalah == "PERTANDINGAN SERI":
+                logText += "Kalian seri. Tidak ada di antara kalian yang kehilangan apapun."
+            else:
+                if menangKalah == "ANDA MENANG":
+                    logText += "Kerajaan anda mendapatkan : "
+                else:
+                    logText += "Kerajaan anda kehilangan : "
+                
+                logText += f"""- ${abs(log.moneyAdd):,}
+- {abs(log.buildAdd):,} bahan bangunan
+- {abs(log.landAdd):,} lahan
+- {abs(log.foodAdd):,} makanan
+- {abs(log.pointsAdd):,} points
+Anda telah kehilangan {log.enemyPopDeath:,} orang-orang dalam perang.\n\n
+
+"""
+                if menangKalah == "ANDA MENANG":
+                    logText += "Kerajaan musuh kehilangan : "
+                else:
+                    logText += "Kerajaan musuh mendapatkan : "
+
+                logText += f"""- ${abs(log.moneyAdd):,}
+- {abs(log.buildAdd):,} bahan bangunan
+- {abs(log.landAdd):,} lahan
+- {abs(log.foodAdd):,} makanan
+- {abs(log.pointsAdd):,} points
+Musuh anda telah kehilangan {log.popDeath:,} orang-orang dalam perang.\n\n
 
 
 """
