@@ -1,4 +1,4 @@
 tes hapus spell
 tes hapus building
-tes game login
+tes game login (Done)
 tes ketika sudah gameover (apakah masih bisa lanjut?)
