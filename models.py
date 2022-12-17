@@ -105,6 +105,14 @@ class WarLog(Base):
         result = session.execute(query)
         kingdom = result.fetchone()[0]
         return kingdom.name
+    
+    def menangKalah(self, status):
+        if self.warPoints == self.enemyWarPoints:
+            return "PERTANDINGAN SERI"
+        elif self.warPoints > self.enemyWarPoints:
+            return "ANDA MENANG" if status == "menyerang" else "ANDA KALAH"
+        else:
+            return "ANDA MENANG" if status == "diserang" else "ANDA KALAH"
 
 
 
@@ -200,10 +208,6 @@ class Kingdom(Base):
     spell_rellations = relationship("KingdomSpellRelation", back_populates="kingdom")
 
     building_relations = relationship("KingdomBuildingRelation", back_populates="kingdom")
-
-    # menyerang = relationship("WarLog", back_populates="penyerang")
-    # diserang = relationship("WarLog", back_populates="musuh")
-
 
     def getAllSpells(self):
         return [ spell_relation.spell for spell_relation in self.spell_rellations ]
@@ -483,8 +487,46 @@ Populasi: {self.population:,}
         result = session.scalars(query)
         logs = [ data for data in result ]
 
+        if logs == []:
+            print("\nAnda belum melakukan serangan\n")
+
         for log in logs:
-            print(log)
+            menangKalah = log.menangKalah(status="menyerang")
+            logText = f"""Kerajaan musuh : {log.getNamaMusuh()}
+Hasil pertandingan :
+===={menangKalah}====
+"""
+            if menangKalah == "PERTANDINGAN SERI":
+                logText += "Kalian seri. Tidak ada di antara kalian yang kehilangan apapun."
+            else:
+                if menangKalah == "ANDA MENANG":
+                    logText += "Kerajaan anda mendapatkan : "
+                else:
+                    logText += "Kerajaan anda kehilangan : "
+                
+                logText += f"""- ${abs(log.moneyAdd):,}
+- {abs(log.buildAdd):,} bahan bangunan
+- {abs(log.landAdd):,} lahan
+- {abs(log.foodAdd):,} makanan
+- {abs(log.pointsAdd):,} points
+Anda telah kehilangan {log.popDeath:,} orang-orang dalam perang.\n\n
+
+"""
+                if menangKalah == "ANDA MENANG":
+                    logText += "Kerajaan musuh kehilangan : "
+                else:
+                    logText += "Kerajaan musuh mendapatkan : "
+
+                logText += f"""- ${abs(log.moneyAdd):,}
+- {abs(log.buildAdd):,} bahan bangunan
+- {abs(log.landAdd):,} lahan
+- {abs(log.foodAdd):,} makanan
+- {abs(log.pointsAdd):,} points
+Musuh anda telah kehilangan {log.enemyPopDeath:,} orang-orang dalam perang.\n\n
+
+
+"""
+                print(logText)
 
 
     def war(self):
@@ -607,6 +649,7 @@ Populasi: {self.population:,}
                 id_musuh=enemy.id,
                 warPoints=warPoints,
                 enemyWarPoints=enemyWarPoints,
+                moneyAdd=moneyAdd,
                 buildAdd=buildAdd,   
                 landAdd=landAdd,
                 foodAdd=foodAdd,
