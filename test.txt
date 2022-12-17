@@ -1,4 +1,5 @@
-tes hapus spell
-tes hapus building
-tes game login (Done)
-tes ketika sudah gameover (apakah masih bisa lanjut?)
+- tes hapus dan tambah spell
+- tes hapus dan tambah building
+- tes game login (Done)
+- tes ketika sudah gameover (apakah masih bisa lanjut?)
+- tes fitur tampilkan log serangang/diserang
