@@ -38,6 +38,8 @@ if pilih == 1:
         else:
             print("\n\nAnda berhasil login")
             player = player[0]
+            player.is_online = 1
+            session.commit()
             break
     
     kingdom = player.kingdom
