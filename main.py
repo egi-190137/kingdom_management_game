@@ -4,6 +4,8 @@ import random
 
 from pygame import mixer 
 from playsound import playsound
+from getpass import getpass
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -24,7 +26,7 @@ pilih = int(input("\nPilih salah satu : "))
 if pilih == 1:
     while True:
         username = input("Masukkan username : ")
-        password = input("Masukkan password : ")
+        password = getpass("Masukkan password : ")
         
         query = select(Player).where(
             (Player.username==username) &
@@ -49,7 +51,7 @@ if pilih == 1:
         
 elif pilih == 2:
     username = input("Masukkan username : ")
-    password = input("Masukkan password : ")
+    password = getpass("Masukkan password : ")
 
     player = Player(
         username=username,

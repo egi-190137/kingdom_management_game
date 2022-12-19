@@ -90,6 +90,7 @@ class WarLog(Base):
     id_musuh = Column(Integer, ForeignKey("kingdom.id"))
 
     warPoints = Column(Integer, default=0)
+    moneyAdd = Column(Integer, default=0)
     enemyWarPoints = Column(Integer, default=0) 
     buildAdd = Column(Integer, default=0)
     landAdd = Column(Integer, default=0)
@@ -102,13 +103,13 @@ class WarLog(Base):
         query = select(Kingdom.name).where(Kingdom.id == self.id_penyerang)
         result = session.execute(query)
         kingdom = result.fetchone()[0]
-        return kingdom.name
+        return kingdom
     
     def getNamaMusuh(self):
         query = select(Kingdom.name).where(Kingdom.id == self.id_musuh)
         result = session.execute(query)
         kingdom = result.fetchone()[0]
-        return kingdom.name
+        return kingdom
     
     def menangKalah(self, status):
         if self.warPoints == self.enemyWarPoints:
@@ -241,11 +242,11 @@ Angka kematian: {int(self.birthMult*self.popGrowth):,} (pertumbuhan populasi sec
 Lahan: {self.land:,}
 Populasi: {self.population:,}
 """
-        if spell_list != []:
+        if spell_list != "":
             kingdom_info += f"""Sihir: 
 {spell_list}
 """
-        if building_list != []:
+        if building_list != "":
             kingdom_info += f"""Bangunan: 
 {building_list}
 """
@@ -266,11 +267,15 @@ Populasi: {self.population:,}
 
     def removeSpell(self, spellName):
         relation = session.execute(
-            select(KingdomSpellRelation).where(
-                KingdomSpellRelation.spell.name==spellName)
+            select(KingdomSpellRelation, Spell)
+            .join(KingdomSpellRelation.spell)
+            .where(
+            (Spell.name==spellName) & 
+            (KingdomSpellRelation.kingdom==self))
         ).fetchone()[0]
 
         self.spell_rellations.remove(relation)
+        session.delete(relation)
 
         session.commit()
 
@@ -487,11 +492,12 @@ Populasi: {self.population:,}
     
 
     def showAttackLog(self, num=5):
-        query = select(WarLog).where(WarLog.id_penyerang == self.id).order_by(WarLog.id_penyerang.desc()).limit(num)
+        query = select(WarLog).where(WarLog.id_penyerang == self.id).order_by(WarLog.id.desc()).limit(num)
         result = session.scalars(query)
         logs = [ data for data in result ]
         
         print("=====LOG MENYERANG=====")
+        print()
 
         if logs == []:
             print("\nAnda belum melakukan serangan\n")
@@ -510,29 +516,29 @@ Hasil pertandingan :
                 else:
                     logText += "Kerajaan anda kehilangan : "
                 
-                logText += f"""- ${abs(log.moneyAdd):,}
+                logText += f"""
+- ${abs(log.moneyAdd):,}
 - {abs(log.buildAdd):,} bahan bangunan
 - {abs(log.landAdd):,} lahan
 - {abs(log.foodAdd):,} makanan
 - {abs(log.pointsAdd):,} points
 Anda telah kehilangan {log.popDeath:,} orang-orang dalam perang.\n\n
-
 """
                 if menangKalah == "ANDA MENANG":
                     logText += "Kerajaan musuh kehilangan : "
                 else:
                     logText += "Kerajaan musuh mendapatkan : "
 
-                logText += f"""- ${abs(log.moneyAdd):,}
+                logText += f"""
+- ${abs(log.moneyAdd):,}
 - {abs(log.buildAdd):,} bahan bangunan
 - {abs(log.landAdd):,} lahan
 - {abs(log.foodAdd):,} makanan
 - {abs(log.pointsAdd):,} points
-Musuh anda telah kehilangan {log.enemyPopDeath:,} orang-orang dalam perang.\n\n
-
-
-"""
-                print(logText)
+Musuh anda telah kehilangan {log.enemyPopDeath:,} orang-orang dalam perang.\n\n"""
+            print(logText)
+            print()
+            print()
 
 
     def showAttackedLog(self, num=5):
@@ -558,29 +564,31 @@ Hasil pertandingan :
                 else:
                     logText += "Kerajaan anda kehilangan : "
                 
-                logText += f"""- ${abs(log.moneyAdd):,}
+                logText += f"""
+- ${abs(log.moneyAdd):,}
 - {abs(log.buildAdd):,} bahan bangunan
 - {abs(log.landAdd):,} lahan
 - {abs(log.foodAdd):,} makanan
 - {abs(log.pointsAdd):,} points
 Anda telah kehilangan {log.enemyPopDeath:,} orang-orang dalam perang.\n\n
-
 """
+
                 if menangKalah == "ANDA MENANG":
                     logText += "Kerajaan musuh kehilangan : "
                 else:
                     logText += "Kerajaan musuh mendapatkan : "
 
-                logText += f"""- ${abs(log.moneyAdd):,}
+                logText += f"""
+- ${abs(log.moneyAdd):,}
 - {abs(log.buildAdd):,} bahan bangunan
 - {abs(log.landAdd):,} lahan
 - {abs(log.foodAdd):,} makanan
 - {abs(log.pointsAdd):,} points
 Musuh anda telah kehilangan {log.popDeath:,} orang-orang dalam perang.\n\n
-
-
 """
-                print(logText)
+            print(logText)
+            print()
+            print()
 
 
     def war(self):
@@ -850,7 +858,7 @@ Musuh anda telah kehilangan {log.popDeath:,} orang-orang dalam perang.\n\n
     def useSpell(self):
         print("Berikut adalah Sihir yang Anda miliki:")
         
-        mySpellName = [ spell  for spell in self.getAllSpells() ]
+        mySpellName = [ spell.name for spell in self.getAllSpells() ]
         for spell in list(set(mySpellName)):
             print("- {}".format(spell))
         
@@ -1052,6 +1060,9 @@ Musuh anda telah kehilangan {log.popDeath:,} orang-orang dalam perang.\n\n
         
         bdec = input()
         bdec = bdec.lower()
+
+        if bdec not in "abcdefghij":
+            return None
 
         idx = "abcdefghij".index(bdec)
         if buildingInfo[idx] == "Sudah dibangun":
