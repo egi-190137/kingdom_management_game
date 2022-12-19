@@ -36,8 +36,10 @@ class Player(Base):
 class KingdomSpellRelation(Base):
     __tablename__ = "spell_kingdom_relation"
 
-    kingdom_id = Column(ForeignKey("kingdom.id"), primary_key=True)
-    spell_id = Column(ForeignKey("spell.id"), primary_key=True)
+    id = Column(Integer, primary_key=True)
+
+    kingdom_id = Column(Integer, ForeignKey("kingdom.id"))
+    spell_id = Column(Integer, ForeignKey("spell.id"))
 
     kingdom = relationship("Kingdom", back_populates="spell_rellations")
 
@@ -57,9 +59,11 @@ class Spell(Base):
 
 class KingdomBuildingRelation(Base):
     __tablename__ = "building_kingdom_relation"
+
+    id = Column(Integer, primary_key=True)
     
-    kingdom_id = Column(ForeignKey("kingdom.id"), primary_key=True)
-    building_id = Column(ForeignKey("building.id"), primary_key=True)
+    kingdom_id = Column(Integer, ForeignKey("kingdom.id"))
+    building_id = Column(Integer, ForeignKey("building.id"))
 
     kingdom = relationship("Kingdom", back_populates="building_relations")
     building = relationship("Building", back_populates="kingdoms_relation")
@@ -82,8 +86,8 @@ class WarLog(Base):
 
     id = Column(Integer, primary_key=True)
     
-    id_penyerang = Column(ForeignKey("kingdom.id"), primary_key=True)
-    id_musuh = Column(ForeignKey("kingdom.id"), primary_key=True)
+    id_penyerang = Column(Integer, ForeignKey("kingdom.id"))
+    id_musuh = Column(Integer, ForeignKey("kingdom.id"))
 
     warPoints = Column(Integer, default=0)
     enemyWarPoints = Column(Integer, default=0) 
@@ -482,7 +486,7 @@ Populasi: {self.population:,}
         session.commit()
     
 
-    def showAttackLog(self, num):
+    def showAttackLog(self, num=5):
         query = select(WarLog).where(WarLog.id_penyerang == self.id).order_by(WarLog.id_penyerang.desc()).limit(num)
         result = session.scalars(query)
         logs = [ data for data in result ]
@@ -531,7 +535,7 @@ Musuh anda telah kehilangan {log.enemyPopDeath:,} orang-orang dalam perang.\n\n
                 print(logText)
 
 
-    def showAttackedLog(self, num):
+    def showAttackedLog(self, num=5):
         query = select(WarLog).where(WarLog.id_musuh == self.id).order_by(WarLog.id_penyerang.desc()).limit(num)
         result = session.scalars(query)
         logs = [ data for data in result ]
