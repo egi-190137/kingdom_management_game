@@ -4,18 +4,21 @@ from sqlalchemy import Column
 from sqlalchemy import ForeignKey
 from sqlalchemy import Integer, String, Float, Boolean
 from sqlalchemy.orm import relationship
+from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.orm import declarative_base
 from sqlalchemy import create_engine
 from sqlalchemy import select
 
-from sqlalchemy.orm import Session
+# from sqlalchemy.orm import db_session
 
 
-engine = create_engine("mysql+pymysql://root:@localhost/clash_of_clans", echo=False)
+engine = create_engine("mysql+pymysql://root:@localhost/kingdom_management", echo=False)
 
+db_session = scoped_session(sessionmaker(autocommit=False,
+                                        autoflush=False,
+                                        bind=engine))
 Base = declarative_base()
-
-session = Session(engine)
+Base.query = db_session.query_property()
 
 class Player(Base):
     __tablename__ = "player_account"
@@ -99,13 +102,13 @@ class WarLog(Base):
 
     def getNamaPenyerang(self):
         query = select(Kingdom.name).where(Kingdom.id == self.id_penyerang)
-        result = session.execute(query)
+        result = db_session.execute(query)
         kingdom = result.fetchone()[0]
         return kingdom
     
     def getNamaMusuh(self):
         query = select(Kingdom.name).where(Kingdom.id == self.id_musuh)
-        result = session.execute(query)
+        result = db_session.execute(query)
         kingdom = result.fetchone()[0]
         return kingdom
     
@@ -252,7 +255,7 @@ Populasi: {self.population:,}
 
 
     def addSpell(self, spellName):
-        spell = session.execute(
+        spell = db_session.execute(
             select(Spell).where(Spell.name == spellName)
             ).fetchone()[0]
         
@@ -260,11 +263,11 @@ Populasi: {self.population:,}
 
         self.spell_rellations.append(relation) 
 
-        session.commit()
+        db_session.commit()
 
 
     def removeSpell(self, spellName):
-        relation = session.execute(
+        relation = db_session.execute(
             select(KingdomSpellRelation, Spell)
             .join(KingdomSpellRelation.spell)
             .where(
@@ -273,9 +276,9 @@ Populasi: {self.population:,}
         ).fetchone()[0]
 
         self.spell_rellations.remove(relation)
-        session.delete(relation)
+        db_session.delete(relation)
 
-        session.commit()
+        db_session.commit()
 
 
     def checkBuildingExist(self, buildingName):
@@ -286,7 +289,7 @@ Populasi: {self.population:,}
 
 
     def addBuilding(self, buildingName):
-        building = session.execute(
+        building = db_session.execute(
             select(Building).where(Building.name == buildingName)
             ).fetchone()[0]
         
@@ -294,7 +297,7 @@ Populasi: {self.population:,}
 
         self.building_relations.append(relation) 
 
-        session.commit()
+        db_session.commit()
 
 
     def showDecision(self):
@@ -332,12 +335,12 @@ Populasi: {self.population:,}
 
     def prodMaterials(self):
         self.buildMaterials = int(self.buildMaterials+(self.prodMult*self.buildMaterialsPro))
-        session.commit()
+        db_session.commit()
     
 
     def makeMoney(self):
         self.money = int(self.money+(self.prodMult*self.moneyPro))
-        session.commit()
+        db_session.commit()
 
 
     def birthPopulation(self):
@@ -351,7 +354,7 @@ Populasi: {self.population:,}
                 self.birthRes = 0
             else:
                 self.daysUntil += 1
-        session.commit()
+        db_session.commit()
 
 
     def deathPopulation(self):
@@ -360,7 +363,7 @@ Populasi: {self.population:,}
             self.population -= self.popDeath
         else:
             self.population -= self.deathAdd
-        session.commit()
+        db_session.commit()
 
 
     def prodFood(self):
@@ -373,7 +376,7 @@ Populasi: {self.population:,}
                 self.food += self.foodPro
             else:
                 self.foodDaysUntil += 1
-        session.commit()
+        db_session.commit()
 
 
     def consumeFood(self):
@@ -385,7 +388,7 @@ Populasi: {self.population:,}
             print("Anda tidak memiliki cukup makanan, jadi {} orang meninggal karena kelaparan.".format(starved))
         else:
             self.food = int(self.food-consumption)
-        session.commit()
+        db_session.commit()
 
 
     def upgradeBuild(self):
@@ -400,7 +403,7 @@ Populasi: {self.population:,}
             self.buildProUpgradePrice += (25*self.buildProLevel)
             print("Berhasil ditingkatkan!\n\n")
             self.points += self.level*100
-        session.commit()
+        db_session.commit()
 
 
     def upgradeMoneyProd(self):
@@ -417,7 +420,7 @@ Populasi: {self.population:,}
             print("Berhasil ditingkatkan!\n\n")
             
             self.points += self.level*100
-        session.commit()
+        db_session.commit()
 
     
     def upgradeDefense(self):
@@ -440,7 +443,7 @@ Populasi: {self.population:,}
             self.defenseUpgradeBuildCost += (25*self.defenseLevel)
             print("Berhasil ditingkatkan!\n\n")
             self.points += self.level*100
-        session.commit()
+        db_session.commit()
 
 
     def upgradeFoodProd(self):
@@ -455,7 +458,7 @@ Populasi: {self.population:,}
             self.foodProUpgradePrice +=(15*self.foodProLevel)
             print("Berhasil ditingkatkan!\n\n")
             self.points += self.level*100
-        session.commit()
+        db_session.commit()
 
 
     def tradeBuilding(self, tradenum):
@@ -470,7 +473,7 @@ Populasi: {self.population:,}
             self.buildMaterials += tradenum
             print("Anda berhasil memperdagangkan {:,} bahan bangunan!\n\n".format(tradenum))
             self.points += self.level*100
-        session.commit()
+        db_session.commit()
 
 
     def tradeMoney(self, tradenum):
@@ -485,12 +488,12 @@ Populasi: {self.population:,}
             self.buildMaterials -= tradenum
             print("Anda berhasil melakukan perdagangan seharga ${:,}!\n\n".format(tradenum))
             self.points += self.level*100
-        session.commit()
+        db_session.commit()
     
 
     def showAttackLog(self, num=5):
         query = select(WarLog).where(WarLog.id_penyerang == self.id).order_by(WarLog.id.desc()).limit(num)
-        result = session.scalars(query)
+        result = db_session.scalars(query)
         logs = [ data for data in result ]
         
         print("=====LOG MENYERANG=====")
@@ -540,7 +543,7 @@ Musuh anda telah kehilangan {log.enemyPopDeath:,} orang-orang dalam perang.\n\n"
 
     def showAttackedLog(self, num=5):
         query = select(WarLog).where(WarLog.id_musuh == self.id).order_by(WarLog.id_penyerang.desc()).limit(num)
-        result = session.scalars(query)
+        result = db_session.scalars(query)
         logs = [ data for data in result ]
 
         print("=====LOG DISERANG=====")
@@ -593,7 +596,7 @@ Musuh anda telah kehilangan {log.popDeath:,} orang-orang dalam perang.\n\n
         query = select(Kingdom, Player).join(Kingdom.ruler).where(
             (Kingdom.id != self.id) & (Player.is_online == 0))
         
-        result = session.scalars(query)
+        result = db_session.scalars(query)
         enemies = [ data for data in result ]
 
         enemy = random.choice(enemies)
@@ -621,7 +624,7 @@ Musuh anda telah kehilangan {log.popDeath:,} orang-orang dalam perang.\n\n
 
             log = WarLog(id_penyerang=self.id, id_musuh=enemy.id)
             
-            session.add(log)
+            db_session.add(log)
 
         else:
             winBy = warPoints - enemyWarPoints
@@ -715,8 +718,8 @@ Musuh anda telah kehilangan {log.popDeath:,} orang-orang dalam perang.\n\n
                 pointsAdd=pointsAdd
             )
 
-            session.add(log)
-        session.commit()
+            db_session.add(log)
+        db_session.commit()
 
 
     def exploreLand(self):
@@ -767,7 +770,7 @@ Musuh anda telah kehilangan {log.popDeath:,} orang-orang dalam perang.\n\n
                 print("Anda pergi menjelajah dan menemukan {:,} lahan.".format(landGain))
             self.points += self.level*50
         
-        session.commit()
+        db_session.commit()
 
 
     def randomEvent(self):
@@ -847,7 +850,7 @@ Musuh anda telah kehilangan {log.popDeath:,} orang-orang dalam perang.\n\n
             self.points -= self.points+1
             print("Seorang penyihir jahat menyebabkan poin Anda turun di bawah 0 jadi sekarang Anda turun level.")
         
-        session.commit()
+        db_session.commit()
 
 
     def useSpell(self):
@@ -981,7 +984,7 @@ Musuh anda telah kehilangan {log.popDeath:,} orang-orang dalam perang.\n\n
             else:
                 print("Anda tidak memiliki Sihir ini!\n\n")
                 self.points -= self.level*50
-        session.commit()
+        db_session.commit()
 
     def changeLaw(self):
         print("Hukum apa yang ingin Anda ubah?")
@@ -1021,7 +1024,7 @@ Musuh anda telah kehilangan {log.popDeath:,} orang-orang dalam perang.\n\n
                 self.consumpMult = 1
                 self.prodMult = 1
             print("Berhasil diubah!")  
-        session.commit()
+        db_session.commit()
 
 
     def build(self):
@@ -1233,7 +1236,7 @@ Musuh anda telah kehilangan {log.popDeath:,} orang-orang dalam perang.\n\n
                     self.points -= self.level*50
             else:
                 print("\n")
-        session.commit()
+        db_session.commit()
 
 
     def trainSoldier(self):
@@ -1251,7 +1254,7 @@ Musuh anda telah kehilangan {log.popDeath:,} orang-orang dalam perang.\n\n
         else:
             print()
             print()
-        session.commit()
+        db_session.commit()
 
 
     def createMortar(self):        
@@ -1269,7 +1272,7 @@ Musuh anda telah kehilangan {log.popDeath:,} orang-orang dalam perang.\n\n
         else:
             print()
             print()
-        session.commit()
+        db_session.commit()
 
 
     def createMissile(self):
@@ -1287,7 +1290,7 @@ Musuh anda telah kehilangan {log.popDeath:,} orang-orang dalam perang.\n\n
         else:
             print()
             print()
-        session.commit()
+        db_session.commit()
 
 
     def createNuke(self):
@@ -1305,7 +1308,7 @@ Musuh anda telah kehilangan {log.popDeath:,} orang-orang dalam perang.\n\n
         else:
             print()
             print()
-        session.commit()
+        db_session.commit()
 
 
     def createHBomb(self):
@@ -1323,7 +1326,7 @@ Musuh anda telah kehilangan {log.popDeath:,} orang-orang dalam perang.\n\n
         else:
             print()
             print()
-        session.commit()
+        db_session.commit()
     
 
     def createBHBomb(self):
@@ -1341,7 +1344,7 @@ Musuh anda telah kehilangan {log.popDeath:,} orang-orang dalam perang.\n\n
         else:
             print()
             print()
-        session.commit()
+        db_session.commit()
 
 
 
@@ -1349,11 +1352,11 @@ Base.metadata.create_all(engine)
 
 # Cek apakah tabel spell
 query = select(Spell)
-result = session.scalars(query)
+result = db_session.scalars(query)
 spells = [ data for data in result ]
 
 if spells == []:
-    session.add_all([
+    db_session.add_all([
         Spell(name="Sihir Kemakmuran"),
         Spell(name="Sihir Kesuburan"),
         Spell(name="Sihir Kekayaan"),
@@ -1369,11 +1372,11 @@ if spells == []:
 
 # Cek apakah tabel building masih kosong
 query = select(Building)
-result = session.scalars(query)
+result = db_session.scalars(query)
 buildings = [ data for data in result ]
 
 if buildings == []:
-    session.add_all([
+    db_session.add_all([
         Building(name="Monolit Batu"),
         Building(name="Orang-orangan Sawah"),
         Building(name="Patung Bayi"),
@@ -1386,4 +1389,4 @@ if buildings == []:
         Building(name="Monumen Kehidupan"),
     ])
 
-session.commit()
+db_session.commit()
