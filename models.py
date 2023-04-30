@@ -1,5 +1,3 @@
-import time
-from playsound import playsound
 import random
 
 from sqlalchemy import Column
@@ -385,7 +383,6 @@ Populasi: {self.population:,}
             self.population -= starved
             self.food = 0
             print("Anda tidak memiliki cukup makanan, jadi {} orang meninggal karena kelaparan.".format(starved))
-            time.sleep(1)
         else:
             self.food = int(self.food-consumption)
         session.commit()
@@ -621,7 +618,6 @@ Musuh anda telah kehilangan {log.popDeath:,} orang-orang dalam perang.\n\n
         
         if warPoints == enemyWarPoints:
             print("Kalian seri. Tidak ada di antara kalian yang kehilangan apapun.")
-            time.sleep(1)
 
             log = WarLog(id_penyerang=self.id, id_musuh=enemy.id)
             
@@ -704,7 +700,6 @@ Musuh anda telah kehilangan {log.popDeath:,} orang-orang dalam perang.\n\n
             print("- {:,} makanan\n".format(abs(foodAdd)))
             print("- {:,} points\n".format(abs(pointsAdd)))
             print("Anda telah kehilangan {:,} orang-orang dalam perang.\n\n".format(popDeath))
-            time.sleep(2)
 
             log = WarLog(
                 id_penyerang=self.id, 
